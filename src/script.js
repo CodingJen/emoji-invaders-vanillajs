@@ -15,6 +15,7 @@ const gameState = {
   shotWidth: 10,
   shotStart: 50,
   shotSpeed: 500,
+  invadersInitialTop: 50,
 
   //variables
   lastTime: null,
@@ -25,10 +26,9 @@ const gameState = {
   shotPosition: { x: null, y: null },
 };
 
-const keys = [];
+let keys = [];
 
 function handleKeyDown(e) {
-  //console.log(e);
   keys[e.keyCode] = true;
 }
 
@@ -38,6 +38,11 @@ function handleKeyUp(e) {
 
 function isKeyPressed(keycode) {
   return keys[keycode];
+}
+
+function lostFocus(e) {
+  // clear keys so things don't keep happening
+  keys.forEach((key, i) => (keys[i] = false)); // not sure why just setting key=false doesn't work?!
 }
 
 function setSpritePosition(sprite, { x, y }) {
@@ -61,14 +66,23 @@ function animate(timestep) {
   if (gameState.shotFired) {
     const shotRect = shot.getBoundingClientRect();
     const shotTop = shotRect.top;
+    const shotMid = shotRect.left + gameState.shotWidth / 2;
     invaders.forEach((invader) => {
       // do we need to check for the presence of the hidden class to see if it's gone first?
       const rect = invader.getBoundingClientRect();
-      if (Math.round(rect.bottom) < shotTop && Math.round(rect.top) > shotTop) {
-        console.log("hit");
+      if (
+        shotTop < rect.bottom &&
+        shotTop > rect.top &&
+        shotMid > rect.left &&
+        shotMid < rect.right
+      ) {
+        // Hit logic
+        if (!invader.classList.contains("hidden")) {
+          gameState.shotFired = false;
+          shot.classList.add("hidden");
+          invader.classList.add("hidden");
+        }
       }
-      //console.log(Math.round(rect.bottom), Math.round(shotRect.top))
-      //console.log(invader.classList)
     });
   }
 
@@ -130,11 +144,14 @@ function animate(timestep) {
 
 window.addEventListener("keydown", handleKeyDown);
 window.addEventListener("keyup", handleKeyUp);
+window.addEventListener("blur", lostFocus);
 
 setSpritePosition(player, {
   x: gameState.playerPosition,
   y: gameState.playerY,
 });
+
+//setSpritePosition(invadersGrid, { x: 0, y: gameState.invadersInitialTop });
 
 // once all is setup lets get this going!
 window.requestAnimationFrame(animate);
