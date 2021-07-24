@@ -16,6 +16,7 @@ const gameState = {
   shotStart: 50,
   shotSpeed: 500,
   invadersInitialTop: 50,
+  invadersCurrentPosition: { x: 0, y: 50 },
 
   //variables
   lastTime: null,
@@ -66,7 +67,7 @@ function animate(timestep) {
   if (gameState.shotFired) {
     const shotRect = shot.getBoundingClientRect();
     const shotTop = shotRect.top;
-    const shotMid = shotRect.left + gameState.shotWidth / 2;
+    const shotMid = shotRect.left + shotRect.width / 2;
     invaders.forEach((invader) => {
       // do we need to check for the presence of the hidden class to see if it's gone first?
       const rect = invader.getBoundingClientRect();
