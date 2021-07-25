@@ -50,7 +50,6 @@ gameState.moveAmount = gameState.gameWidth / (14 * 8); // (11 chars + 3spaces)* 
 let keys = [];
 
 function playButton(e) {
-  console.dir(btnPlay);
   gameState.paused = !gameState.paused;
   btnPlay.innerHTML = gameState.paused ? "Play!" : "Pause";
   if (!gameState.paused) window.requestAnimationFrame(animate);
@@ -98,7 +97,7 @@ function animate(timestep) {
   if (timestep >= gameState.lastAnimationTick + gameState.invadersBaseSpeed * (gameState.activeInvaders / gameState.totalInvaders)) {
     gameState.lastAnimationTick = timestep;
     doAnimate = true;
-    if (gameState.rollTick <= 8) gameState.rollTick++;
+    if (gameState.rollTick < 8) gameState.rollTick++;
     else gameState.rollTick = 1;
   }
   const deltaTime = (timestep - gameState.lastTime) / 1000; // deltaT in seconds
@@ -162,7 +161,9 @@ function animate(timestep) {
         gameState.invadersCurrentPosition.x -= gameState.moveAmount;
       }
     }
-    invaders.forEach((invader) => (invader.style.transform = "rotate(" + (360 % gameState.rollTick) + ");"));
+    invaders.forEach((invader) => {
+      invader.style.transform = "rotate(" + (360 / 8) * gameState.rollTick + "deg)";
+    });
     setSpritePosition(invadersGrid, gameState.invadersCurrentPosition);
   }
   // ********************************************************************************************
