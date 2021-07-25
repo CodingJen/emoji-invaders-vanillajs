@@ -15,6 +15,8 @@ body {
   margin: 0;
   height: 100vh;
   display: flex;
+  flex-direction: column;
+  gap: 10px;
   justify-content: center;
   align-items: center;
   background-color: dimgray;
@@ -58,7 +60,7 @@ body {
   display: grid;
   font-size: 3rem;
   grid-template-columns: repeat(11, 1fr);
-  transition: all 0.5s;
+  transition: all 0.2s;
 }
 
 .score-container {
@@ -85,4 +87,9 @@ body {
 }
 #level {
   grid-area: level;
+}
+
+.control-btn {
+  padding: 0.5rem;
+  font-size: 2rem;
 }

@@ -9,6 +9,8 @@ const shot = document.getElementById("shot");
 const invadersGrid = document.getElementById("invaders");
 const invaders = document.querySelectorAll(".invader");
 
+const btnPlay = document.getElementById("play-btn");
+
 // some game variable we need
 const gameState = {
   // static settings
@@ -25,6 +27,7 @@ const gameState = {
   totalInvaders: 55,
 
   //variables
+  paused: false,
   level: 1,
   score: 0,
   lastTime: null,
@@ -45,6 +48,13 @@ gameState.playerY = gameState.gameHeight - 50 - player.getBoundingClientRect().h
 gameState.moveAmount = gameState.gameWidth / (14 * 8); // (11 chars + 3spaces)* 8 moves per char
 
 let keys = [];
+
+function playButton(e) {
+  console.dir(btnPlay);
+  gameState.paused = !gameState.paused;
+  btnPlay.innerHTML = gameState.paused ? "Play!" : "Pause";
+  if (!gameState.paused) window.requestAnimationFrame(animate);
+}
 
 function handleKeyDown(e) {
   keys[e.keyCode] = true;
@@ -77,6 +87,7 @@ function updateLevel(newLevel) {
 }
 
 function animate(timestep) {
+  if (gameState.paused) return;
   if (!gameState.lastTime) {
     gameState.lastTime = timestep;
     gameState.lastAnimationTick = timestep;
@@ -142,11 +153,14 @@ function animate(timestep) {
         }
       });
     }
-    if (swapped) gameState.invadersCurrentPosition.y += 40;
-    if (gameState.rightDirection) {
-      gameState.invadersCurrentPosition.x += gameState.moveAmount;
+    if (swapped) {
+      gameState.invadersCurrentPosition.y += 40;
     } else {
-      gameState.invadersCurrentPosition.x -= gameState.moveAmount;
+      if (gameState.rightDirection) {
+        gameState.invadersCurrentPosition.x += gameState.moveAmount;
+      } else {
+        gameState.invadersCurrentPosition.x -= gameState.moveAmount;
+      }
     }
     invaders.forEach((invader) => (invader.style.transform = "rotate(" + (360 % gameState.rollTick) + ");"));
     setSpritePosition(invadersGrid, gameState.invadersCurrentPosition);
@@ -210,6 +224,7 @@ function animate(timestep) {
 // ********************************************************************************************
 // setup listeners
 // ********************************************************************************************
+btnPlay.addEventListener("click", playButton);
 window.addEventListener("keydown", handleKeyDown);
 window.addEventListener("keyup", handleKeyUp);
 window.addEventListener("blur", lostFocus);
