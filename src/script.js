@@ -9,6 +9,11 @@ const shot = document.getElementById("shot");
 const invadersGrid = document.getElementById("invaders");
 const invaders = document.querySelectorAll(".invader");
 
+const audioD = document.getElementById("audio-d");
+const audioC = document.getElementById("audio-c");
+const audioAsharp = document.getElementById("audio-asharp");
+const audioA = document.getElementById("audio-a");
+
 const btnPlay = document.getElementById("play-btn");
 
 // some game variable we need
@@ -27,7 +32,7 @@ const gameState = {
   totalInvaders: 55,
 
   //variables
-  paused: false,
+  paused: true,
   level: 1,
   score: 0,
   lastTime: null,
@@ -45,14 +50,22 @@ const gameState = {
 };
 
 gameState.playerY = gameState.gameHeight - 50 - player.getBoundingClientRect().height;
-gameState.moveAmount = gameState.gameWidth / (14 * 8); // (11 chars + 3spaces)* 8 moves per char
+recalcMoveAmount();
 
 let keys = [];
+
+function recalcMoveAmount() {
+  gameState.moveAmount = gameState.gameWidth / (14 * 8 * (gameState.activeInvaders / gameState.totalInvaders)); // (11 chars + 3spaces)* 8 moves per char // (active cols + 3) * 8/col
+}
 
 function playButton(e) {
   gameState.paused = !gameState.paused;
   btnPlay.innerHTML = gameState.paused ? "Play!" : "Pause";
-  if (!gameState.paused) window.requestAnimationFrame(animate);
+
+  if (!gameState.paused) {
+    this.blur();
+    window.requestAnimationFrame(animate);
+  }
 }
 
 function handleKeyDown(e) {
@@ -83,6 +96,30 @@ function updateScore(newScore) {
 
 function updateLevel(newLevel) {
   levelElement.innerHTML = newLevel;
+}
+
+function stopSounds() {
+  audioD.pause();
+  audioC.pause();
+  audioAsharp.pause();
+  audioA.pause();
+}
+
+function playSound(tickNumber) {
+  stopSounds();
+  if (tickNumber === 1 || tickNumber === 5) {
+    audioD.currentTime = 0;
+    audioD.play();
+  } else if (tickNumber === 2 || tickNumber === 6) {
+    audioC.currentTime = 0;
+    audioC.play();
+  } else if (tickNumber === 3 || tickNumber === 7) {
+    audioAsharp.currentTime = 0;
+    audioAsharp.play();
+  } else if (tickNumber === 4 || tickNumber === 8) {
+    audioA.currentTime = 0;
+    audioA.play();
+  }
 }
 
 function animate(timestep) {
@@ -122,6 +159,7 @@ function animate(timestep) {
           gameState.score += parseInt(invader.dataset.points);
           updateScore(gameState.score);
           gameState.activeInvaders--;
+          recalcMoveAmount();
         }
       }
     });
@@ -164,8 +202,10 @@ function animate(timestep) {
     invaders.forEach((invader) => {
       invader.style.transform = "rotate(" + (360 / 8) * gameState.rollTick + "deg)";
     });
+    playSound(gameState.rollTick);
     setSpritePosition(invadersGrid, gameState.invadersCurrentPosition);
   }
+
   // ********************************************************************************************
   // handle shot move
   // ********************************************************************************************
