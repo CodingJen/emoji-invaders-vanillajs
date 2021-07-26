@@ -159,7 +159,7 @@ function animate(timestep) {
           gameState.score += parseInt(invader.dataset.points);
           updateScore(gameState.score);
           gameState.activeInvaders--;
-          recalcMoveAmount();
+          //recalcMoveAmount();
         }
       }
     });
