@@ -72,6 +72,11 @@ header {
   color: yellow;
 }
 
+.to-top {
+  bottom: -50px;
+  transition: all 1s;
+}
+
 /* matrix( scaleX(), skewY(), skewX(), scaleY(), translateX(), translateY() ) */
 .container {
   width: 640px;
@@ -115,6 +120,12 @@ header {
   gap: 4px;
 }
 
+.invader {
+  /* font-size: 7vmin; */
+  /* animation: 1s linear 0s infinite alternate none running grow1; */
+  /* transition: all 0.5s; */
+}
+
 .score-container {
   max-width: 200px;
   font-family: sans-serif;
@@ -144,11 +155,6 @@ header {
 .control-btn {
   padding: 0.5rem;
   font-size: 2rem;
-}
-
-.invader {
-  /* animation: 1s linear 0s infinite alternate none running grow1; */
-  /* transition: all 0.5s; */
 }
 
 @keyframes grow1 {

@@ -16,6 +16,7 @@ const audioA = document.getElementById("audio-a");
 const pew = document.getElementById("pew");
 
 const btnPlay = document.getElementById("play-btn");
+const heading = document.getElementById("head");
 
 // some game variable we need
 const gameState = {
@@ -31,6 +32,7 @@ const gameState = {
   invadersInitialTop: 50,
   invadersBaseSpeed: 1000,
   totalInvaders: 55,
+  boomTime: 75, // milliseconds boom emoji shown
 
   //variables
   paused: true,
@@ -60,6 +62,7 @@ const emojis = Object.freeze({
   player: "🌋",
   shot: "🔥",
   bomb: "💣",
+  boom: "💥",
 });
 
 gameState.playerY = gameState.gameHeight - 50 - player.getBoundingClientRect().height;
@@ -76,6 +79,7 @@ function playButton(e) {
   btnPlay.innerHTML = gameState.paused ? "Play!" : "Pause";
 
   if (!gameState.paused) {
+    // heading.classList.add("to-top");
     this.blur();
     window.requestAnimationFrame(animate);
   }
@@ -135,9 +139,10 @@ function playSound(tickNumber) {
   }
 }
 
-function createInvader(emoji, { x, y }, classList = []) {
+function createInvader(emoji, { x, y }, points, classList = []) {
   const newInvader = document.createElement("div");
   newInvader.innerHTML = emoji;
+  newInvader.dataset.points = points;
   newInvader.classList.add("invader", ...classList);
   newInvader.style.left = x;
   newInvader.style.top = y;
@@ -153,6 +158,19 @@ function createBomb(emoji, { x, y }) {
   newBomb.style.top = y;
 
   return newBomb;
+}
+
+function killed(element, currentTimestep) {
+  gameState.lastKilled = element;
+  gameState.lastKilledTime = currentTimestep;
+  element.innerHTML = emojis.boom;
+}
+
+function clearKilled(currentTimestep) {
+  if (gameState.lastKilled !== null && currentTimestep >= gameState.lastKilledTime + gameState.boomTime) {
+    gameState.lastKilled.innerHTML = "";
+    gameState.lastKilled.classList.add("hidden");
+  }
 }
 
 function animate(timestep) {
@@ -172,6 +190,9 @@ function animate(timestep) {
   }
   const deltaTime = (timestep - gameState.lastTime) / 1000; // deltaT in seconds
 
+  // clear off screen what isn't needed first
+  clearKilled(timestep);
+
   // handle other animations first, before player
   // we're moving, check collision before moving again
   // my thinking on the seperation of gameState.shotFired here is to test if the
@@ -188,10 +209,11 @@ function animate(timestep) {
           // Hit logic
           gameState.shotFired = false;
           shot.classList.add("hidden");
-          invader.classList.add("hidden");
+          // invader.classList.add("hidden");
           gameState.score += parseInt(invader.dataset.points);
           updateScore(gameState.score);
           gameState.activeInvaders--;
+          killed(invader, timestep);
           //recalcMoveAmount();
         }
       }
