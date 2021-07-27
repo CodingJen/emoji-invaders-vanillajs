@@ -14,6 +14,7 @@ const audioC = document.getElementById("audio-c");
 const audioAsharp = document.getElementById("audio-asharp");
 const audioA = document.getElementById("audio-a");
 const pew = document.getElementById("pew");
+const boom = document.getElementById("boom");
 
 const btnPlay = document.getElementById("play-btn");
 const heading = document.getElementById("head");
@@ -213,6 +214,8 @@ function animate(timestep) {
           // Hit logic
           gameState.shotFired = false;
           shot.classList.add("hidden");
+          boom.currentTime = 0;
+          boom.play();
           // invader.classList.add("hidden");
           gameState.score += parseInt(invader.dataset.points);
           updateScore(gameState.score);
