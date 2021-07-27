@@ -1,3 +1,8 @@
+@font-face {
+  font-family: "MachineStd";
+  src: url("https://f000.backblazeb2.com/file/JensBucket/MachineStd.otf") format("opentype");
+}
+
 *,
 *::before,
 *::after {
@@ -20,8 +25,22 @@ body {
   justify-content: center;
   align-items: center;
   background-color: dimgray;
+  overflow: hidden;
 }
 
+.logo {
+  font-family: "MachineStd", sans-serif;
+  font-size: 8rem;
+  text-align: center;
+  line-height: 95%;
+  color: yellow;
+  text-shadow: 0 -0.8rem orange, 0 -1.6rem red;
+  letter-spacing: 2px;
+  transform: rotateX(-45deg);
+  perspective: -900px;
+  transform-origin: 50% 100%;
+}
+/* matrix( scaleX(), skewY(), skewX(), scaleY(), translateX(), translateY() ) */
 .container {
   width: 640px;
   height: 480px;

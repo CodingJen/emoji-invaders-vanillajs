@@ -13,6 +13,7 @@ const audioD = document.getElementById("audio-d");
 const audioC = document.getElementById("audio-c");
 const audioAsharp = document.getElementById("audio-asharp");
 const audioA = document.getElementById("audio-a");
+const pew = document.getElementById("pew");
 
 const btnPlay = document.getElementById("play-btn");
 
@@ -38,6 +39,7 @@ const gameState = {
   lastTime: null,
   lastAnimationTick: null,
   rollTick: 0,
+
   gameWidth: gameWindow.getBoundingClientRect().width,
   gameHeight: gameWindow.getBoundingClientRect().height,
   playerPosition: 300,
@@ -47,7 +49,18 @@ const gameState = {
   rightDirection: true,
   moveAmount: null,
   activeInvaders: 55,
+  lastKilled: null,
+  lastKilledTime: null,
+
+  bombs: [],
+  bombPositions: [], // array of {x: ?, y: ?}
 };
+
+const emojis = Object.freeze({
+  player: "🌋",
+  shot: "🔥",
+  bomb: "💣",
+});
 
 gameState.playerY = gameState.gameHeight - 50 - player.getBoundingClientRect().height;
 recalcMoveAmount();
@@ -120,6 +133,26 @@ function playSound(tickNumber) {
     audioA.currentTime = 0;
     audioA.play();
   }
+}
+
+function createInvader(emoji, { x, y }, classList = []) {
+  const newInvader = document.createElement("div");
+  newInvader.innerHTML = emoji;
+  newInvader.classList.add("invader", ...classList);
+  newInvader.style.left = x;
+  newInvader.style.top = y;
+
+  return newInvader;
+}
+
+function createBomb(emoji, { x, y }) {
+  const newBomb = document.createElement("div");
+  newBomb.innerHTML = emoji;
+  newBomb.classList.add("bomb");
+  newBomb.style.left = x;
+  newBomb.style.top = y;
+
+  return newBomb;
 }
 
 function animate(timestep) {
@@ -207,6 +240,12 @@ function animate(timestep) {
   }
 
   // ********************************************************************************************
+  // drop bomb if needed and move it (them)
+  // ********************************************************************************************
+
+  // always have 1 dropping or multiple if on higher level
+
+  // ********************************************************************************************
   // handle shot move
   // ********************************************************************************************
   if (gameState.shotFired) {
@@ -233,6 +272,8 @@ function animate(timestep) {
       };
       setSpritePosition(shot, gameState.shotPosition);
       shot.classList.remove("hidden");
+      pew.currentTime = 0;
+      pew.play();
     }
   }
   if (isKeyPressed(37)) {
