@@ -28,18 +28,50 @@ body {
   overflow: hidden;
 }
 
+header {
+  perspective: 100px;
+  perspective-origin: 50% 100%;
+}
+
 .logo {
+  position: relative;
+  /* border: 1px solid red; */
   font-family: "MachineStd", sans-serif;
-  font-size: 8rem;
+  font-size: 5rem;
   text-align: center;
   line-height: 95%;
-  color: yellow;
-  text-shadow: 0 -0.8rem orange, 0 -1.6rem red;
+  color: red;
+  /* text-shadow: 0 -0.8rem orange, 0 -1.6rem red; */
   letter-spacing: 2px;
-  transform: rotateX(-45deg);
-  perspective: -900px;
+  transform: scaleY(1) rotateX(-15deg);
   transform-origin: 50% 100%;
 }
+.logo::before {
+  content: "EMOJI\aINVADERS";
+  /* outline: 1px solid orange; */
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: scaleY(0.95) scaleX(1.05);
+  transform-origin: 50% 100%;
+  color: orange;
+}
+
+.logo::after {
+  content: "EMOJI\aINVADERS";
+  /* outline: 1px solid yellow; */
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: scaleY(0.9) scaleX(1.1);
+  transform-origin: 50% 100%;
+  color: yellow;
+}
+
 /* matrix( scaleX(), skewY(), skewX(), scaleY(), translateX(), translateY() ) */
 .container {
   width: 640px;
