@@ -142,6 +142,11 @@ function playSound(tickNumber) {
   }
 }
 
+function isCollided(element1, element2) {
+  const rect1 = element1.getBoundingClientRect();
+  const rect2 = element2.getBoundingClientRect();
+}
+
 function createInvader(emoji, { x, y }, points, classList = []) {
   const newInvader = document.createElement("div");
   newInvader.innerHTML = emoji;
@@ -163,6 +168,8 @@ function createBomb(emoji, { x, y }) {
   return newBomb;
 }
 
+// 11 columns x 5 rows
+
 function generateEmojis({ x, y }) {}
 
 function killed(element, currentTimestep) {
@@ -177,7 +184,9 @@ function clearKilled(currentTimestep) {
     gameState.lastKilled.classList.add("hidden");
   }
 }
-
+/**********************************************************************************************/
+/***********************************  MAIN GAME LOOP ******************************************/
+/**********************************************************************************************/
 function animate(timestep) {
   if (gameState.paused) return;
   if (!gameState.lastTime) {
