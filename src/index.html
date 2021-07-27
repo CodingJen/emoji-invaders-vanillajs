@@ -9,82 +9,88 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐰</text></svg>" />
   </head>
   <body>
-    <header>
-      <div class="logo">EMOJI<br />INVADERS</div>
-    </header>
-    <div id="game" class="container">
-      <div class="score-container">
-        <div id="score-label">Score:</div>
-        <div id="score"></div>
-        <div id="level-label">Level:</div>
-        <div id="level"></div>
+    <div class="app-wrapper">
+      <header id="head">
+        <div class="logo">EMOJI INVADERS</div>
+      </header>
+      <div id="game" class="game-container">
+        <div class="score-container">
+          <div id="score-label">Score:</div>
+          <div id="score"></div>
+          <div id="level-label">Level:</div>
+          <div id="level"></div>
+        </div>
+        <div id="invaders" class="invaders">
+          <div class="invader row5" data-points="30" data-moveoffset="44">🥳</div>
+          <div class="invader row5" data-points="30" data-moveoffset="45">🥳</div>
+          <div class="invader row5" data-points="30" data-moveoffset="46">🥳</div>
+          <div class="invader row5" data-points="30" data-moveoffset="47">🥳</div>
+          <div class="invader row5" data-points="30" data-moveoffset="48">🥳</div>
+          <div class="invader row5" data-points="30" data-moveoffset="49">🥳</div>
+          <div class="invader row5" data-points="30" data-moveoffset="50">🥳</div>
+          <div class="invader row5" data-points="30" data-moveoffset="51">🥳</div>
+          <div class="invader row5" data-points="30" data-moveoffset="52">🥳</div>
+          <div class="invader row5" data-points="30" data-moveoffset="53">🥳</div>
+          <div class="invader row5" data-points="30" data-moveoffset="54">🥳</div>
+          <div class="invader row4" data-points="20" data-moveoffset="33">😃</div>
+          <div class="invader row4" data-points="20" data-moveoffset="34">😃</div>
+          <div class="invader row4" data-points="20" data-moveoffset="35">😃</div>
+          <div class="invader row4" data-points="20" data-moveoffset="36">😃</div>
+          <div class="invader row4" data-points="20" data-moveoffset="37">😃</div>
+          <div class="invader row4" data-points="20" data-moveoffset="38">😃</div>
+          <div class="invader row4" data-points="20" data-moveoffset="39">😃</div>
+          <div class="invader row4" data-points="20" data-moveoffset="40">😃</div>
+          <div class="invader row4" data-points="20" data-moveoffset="41">😃</div>
+          <div class="invader row4" data-points="20" data-moveoffset="42">😃</div>
+          <div class="invader row4" data-points="20" data-moveoffset="43">😃</div>
+          <div class="invader row4" data-points="20" data-moveoffset="22">😎</div>
+          <div class="invader row3" data-points="20" data-moveoffset="23">😎</div>
+          <div class="invader row3" data-points="20" data-moveoffset="24">😎</div>
+          <div class="invader row3" data-points="20" data-moveoffset="25">😎</div>
+          <div class="invader row3" data-points="20" data-moveoffset="26">😎</div>
+          <div class="invader row3" data-points="20" data-moveoffset="27">😎</div>
+          <div class="invader row3" data-points="20" data-moveoffset="28">😎</div>
+          <div class="invader row3" data-points="20" data-moveoffset="29">😎</div>
+          <div class="invader row3" data-points="20" data-moveoffset="30">😎</div>
+          <div class="invader row3" data-points="20" data-moveoffset="31">😎</div>
+          <div class="invader row3" data-points="20" data-moveoffset="32">😎</div>
+          <div class="invader row2" data-points="10" data-moveoffset="11">😟</div>
+          <div class="invader row2" data-points="10" data-moveoffset="12">😟</div>
+          <div class="invader row2" data-points="10" data-moveoffset="13">😟</div>
+          <div class="invader row2" data-points="10" data-moveoffset="14">😟</div>
+          <div class="invader row2" data-points="10" data-moveoffset="15">😟</div>
+          <div class="invader row2" data-points="10" data-moveoffset="16">😟</div>
+          <div class="invader row2" data-points="10" data-moveoffset="17">😟</div>
+          <div class="invader row2" data-points="10" data-moveoffset="18">😟</div>
+          <div class="invader row2" data-points="10" data-moveoffset="19">😟</div>
+          <div class="invader row2" data-points="10" data-moveoffset="20">😟</div>
+          <div class="invader row2" data-points="10" data-moveoffset="21">😟</div>
+          <div class="invader row1" data-points="10" data-moveoffset="0">😮</div>
+          <div class="invader row1" data-points="10" data-moveoffset="1">😮</div>
+          <div class="invader row1" data-points="10" data-moveoffset="2">😮</div>
+          <div class="invader row1" data-points="10" data-moveoffset="3">😮</div>
+          <div class="invader row1" data-points="10" data-moveoffset="4">😮</div>
+          <div class="invader row1" data-points="10" data-moveoffset="5">😮</div>
+          <div class="invader row1" data-points="10" data-moveoffset="6">😮</div>
+          <div class="invader row1" data-points="10" data-moveoffset="7">😮</div>
+          <div class="invader row1" data-points="10" data-moveoffset="8">😮</div>
+          <div class="invader row1" data-points="10" data-moveoffset="9">😮</div>
+          <div class="invader row1" data-points="10" data-moveoffset="10">😮</div>
+        </div>
+        <div id="player" class="box">🌋</div>
+        <div id="shot" class="shot hidden">🔥</div>
+        <audio id="audio-d" src="https://f000.backblazeb2.com/file/JensBucket/d.mp3"></audio>
+        <audio id="audio-c" src="https://f000.backblazeb2.com/file/JensBucket/c.mp3"></audio>
+        <audio id="audio-asharp" src="https://f000.backblazeb2.com/file/JensBucket/a%23.mp3"></audio>
+        <audio id="audio-a" src="https://f000.backblazeb2.com/file/JensBucket/a.mp3"></audio>
+        <audio id="pew" src="https://f000.backblazeb2.com/file/JensBucket/pew.mp3"></audio>
       </div>
-      <div id="invaders" class="invaders">
-        <div class="invader row5" data-points="30" data-moveoffset="44">🥳</div>
-        <div class="invader row5" data-points="30" data-moveoffset="45">🥳</div>
-        <div class="invader row5" data-points="30" data-moveoffset="46">🥳</div>
-        <div class="invader row5" data-points="30" data-moveoffset="47">🥳</div>
-        <div class="invader row5" data-points="30" data-moveoffset="48">🥳</div>
-        <div class="invader row5" data-points="30" data-moveoffset="49">🥳</div>
-        <div class="invader row5" data-points="30" data-moveoffset="50">🥳</div>
-        <div class="invader row5" data-points="30" data-moveoffset="51">🥳</div>
-        <div class="invader row5" data-points="30" data-moveoffset="52">🥳</div>
-        <div class="invader row5" data-points="30" data-moveoffset="53">🥳</div>
-        <div class="invader row5" data-points="30" data-moveoffset="54">🥳</div>
-        <div class="invader row4" data-points="20" data-moveoffset="33">😃</div>
-        <div class="invader row4" data-points="20" data-moveoffset="34">😃</div>
-        <div class="invader row4" data-points="20" data-moveoffset="35">😃</div>
-        <div class="invader row4" data-points="20" data-moveoffset="36">😃</div>
-        <div class="invader row4" data-points="20" data-moveoffset="37">😃</div>
-        <div class="invader row4" data-points="20" data-moveoffset="38">😃</div>
-        <div class="invader row4" data-points="20" data-moveoffset="39">😃</div>
-        <div class="invader row4" data-points="20" data-moveoffset="40">😃</div>
-        <div class="invader row4" data-points="20" data-moveoffset="41">😃</div>
-        <div class="invader row4" data-points="20" data-moveoffset="42">😃</div>
-        <div class="invader row4" data-points="20" data-moveoffset="43">😃</div>
-        <div class="invader row4" data-points="20" data-moveoffset="22">😎</div>
-        <div class="invader row3" data-points="20" data-moveoffset="23">😎</div>
-        <div class="invader row3" data-points="20" data-moveoffset="24">😎</div>
-        <div class="invader row3" data-points="20" data-moveoffset="25">😎</div>
-        <div class="invader row3" data-points="20" data-moveoffset="26">😎</div>
-        <div class="invader row3" data-points="20" data-moveoffset="27">😎</div>
-        <div class="invader row3" data-points="20" data-moveoffset="28">😎</div>
-        <div class="invader row3" data-points="20" data-moveoffset="29">😎</div>
-        <div class="invader row3" data-points="20" data-moveoffset="30">😎</div>
-        <div class="invader row3" data-points="20" data-moveoffset="31">😎</div>
-        <div class="invader row3" data-points="20" data-moveoffset="32">😎</div>
-        <div class="invader row2" data-points="10" data-moveoffset="11">😟</div>
-        <div class="invader row2" data-points="10" data-moveoffset="12">😟</div>
-        <div class="invader row2" data-points="10" data-moveoffset="13">😟</div>
-        <div class="invader row2" data-points="10" data-moveoffset="14">😟</div>
-        <div class="invader row2" data-points="10" data-moveoffset="15">😟</div>
-        <div class="invader row2" data-points="10" data-moveoffset="16">😟</div>
-        <div class="invader row2" data-points="10" data-moveoffset="17">😟</div>
-        <div class="invader row2" data-points="10" data-moveoffset="18">😟</div>
-        <div class="invader row2" data-points="10" data-moveoffset="19">😟</div>
-        <div class="invader row2" data-points="10" data-moveoffset="20">😟</div>
-        <div class="invader row2" data-points="10" data-moveoffset="21">😟</div>
-        <div class="invader row1" data-points="10" data-moveoffset="0">😮</div>
-        <div class="invader row1" data-points="10" data-moveoffset="1">😮</div>
-        <div class="invader row1" data-points="10" data-moveoffset="2">😮</div>
-        <div class="invader row1" data-points="10" data-moveoffset="3">😮</div>
-        <div class="invader row1" data-points="10" data-moveoffset="4">😮</div>
-        <div class="invader row1" data-points="10" data-moveoffset="5">😮</div>
-        <div class="invader row1" data-points="10" data-moveoffset="6">😮</div>
-        <div class="invader row1" data-points="10" data-moveoffset="7">😮</div>
-        <div class="invader row1" data-points="10" data-moveoffset="8">😮</div>
-        <div class="invader row1" data-points="10" data-moveoffset="9">😮</div>
-        <div class="invader row1" data-points="10" data-moveoffset="10">😮</div>
-      </div>
-      <div id="player" class="box">🌋</div>
-      <div id="shot" class="shot hidden">🔥</div>
-      <audio id="audio-d" src="https://f000.backblazeb2.com/file/JensBucket/d.mp3"></audio>
-      <audio id="audio-c" src="https://f000.backblazeb2.com/file/JensBucket/c.mp3"></audio>
-      <audio id="audio-asharp" src="https://f000.backblazeb2.com/file/JensBucket/a%23.mp3"></audio>
-      <audio id="audio-a" src="https://f000.backblazeb2.com/file/JensBucket/a.mp3"></audio>
-      <audio id="pew" src="https://f000.backblazeb2.com/file/JensBucket/pew.mp3"></audio>
+      <footer>
+        <div class="instructions">Left and Right Arrows, Spacebar to fire!</div>
+        <div><button class="control-btn" id="play-btn">Play!</button></div>
+      </footer>
+      <div class="warn">WARNING: STILL A LOT OF BUGS!</div>
     </div>
-    <div><button class="control-btn" id="play-btn">Play!</button></div>
     <script src="script.js"></script>
   </body>
 </html>

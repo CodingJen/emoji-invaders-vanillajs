@@ -47,7 +47,7 @@ header {
   transform-origin: 50% 100%;
 }
 .logo::before {
-  content: "EMOJI\aINVADERS";
+  content: "EMOJI INVADERS";
   /* outline: 1px solid orange; */
   position: absolute;
   top: 0;
@@ -60,7 +60,7 @@ header {
 }
 
 .logo::after {
-  content: "EMOJI\aINVADERS";
+  content: "EMOJI INVADERS";
   /* outline: 1px solid yellow; */
   position: absolute;
   top: 0;
@@ -78,7 +78,7 @@ header {
 }
 
 /* matrix( scaleX(), skewY(), skewX(), scaleY(), translateX(), translateY() ) */
-.container {
+.game-container {
   width: 640px;
   height: 480px;
   background-color: black;
@@ -121,6 +121,7 @@ header {
 }
 
 .invader {
+  flex: 1;
   /* font-size: 7vmin; */
   /* animation: 1s linear 0s infinite alternate none running grow1; */
   /* transition: all 0.5s; */
@@ -155,6 +156,15 @@ header {
 .control-btn {
   padding: 0.5rem;
   font-size: 2rem;
+}
+
+footer {
+  font-family: "MachineStd", sans-serif;
+  font-size: 2rem;
+  color: yellow;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
 }
 
 @keyframes grow1 {

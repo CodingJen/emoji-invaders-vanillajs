@@ -63,6 +63,8 @@ const emojis = Object.freeze({
   shot: "🔥",
   bomb: "💣",
   boom: "💥",
+  alienShip: "😈",
+  deadPlayer: "☠",
 });
 
 gameState.playerY = gameState.gameHeight - 50 - player.getBoundingClientRect().height;
@@ -159,6 +161,8 @@ function createBomb(emoji, { x, y }) {
 
   return newBomb;
 }
+
+function generateEmojis({ x, y }) {}
 
 function killed(element, currentTimestep) {
   gameState.lastKilled = element;
