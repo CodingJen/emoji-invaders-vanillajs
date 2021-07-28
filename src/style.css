@@ -8,6 +8,7 @@
 *::after {
   padding: 0;
   margin: 0;
+  box-sizing: border-box;
 }
 html {
   padding: 0;
@@ -19,16 +20,22 @@ body {
   padding: 0;
   margin: 0;
   height: 100vh;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  justify-content: center;
-  align-items: center;
+
   background-color: dimgray;
   overflow: hidden;
 }
+.app-wrapper {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  /* justify-content: center;
+  align-items: center; */
+}
 
 header {
+  padding: 1rem;
   perspective: 100px;
   perspective-origin: 50% 100%;
 }
@@ -79,11 +86,12 @@ header {
 
 /* matrix( scaleX(), skewY(), skewX(), scaleY(), translateX(), translateY() ) */
 .game-container {
-  width: 640px;
-  height: 480px;
+  width: 100vw;
+  height: 100%;
   background-color: black;
   position: relative;
   box-shadow: inset 0 0 2px 2px rgba(255, 255, 255, 0.2), 2px 2px 10px 3px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
 }
 
 .hidden {
@@ -111,23 +119,16 @@ header {
   font-size: 2rem;
 }
 
-.invaders {
-  position: absolute;
-  display: grid;
-  font-size: 2.5rem;
-  grid-template-columns: repeat(11, 1fr);
-  transition: all 0.4s;
-  gap: 4px;
-}
-
 .invader {
-  flex: 1;
-  /* font-size: 7vmin; */
+  font-size: 5vw;
+  position: absolute;
   /* animation: 1s linear 0s infinite alternate none running grow1; */
   /* transition: all 0.5s; */
 }
 
 .score-container {
+  position: absolute;
+
   max-width: 200px;
   font-family: sans-serif;
   font-size: 2rem;
