@@ -6,8 +6,6 @@ const levelElement = document.getElementById("level");
 
 const player = document.getElementById("player");
 const shot = document.getElementById("shot");
-const invadersGrid = document.getElementById("invaders");
-const invaders = document.querySelectorAll(".invader");
 
 const audioD = document.getElementById("audio-d");
 const audioC = document.getElementById("audio-c");
@@ -34,8 +32,10 @@ const gameState = {
   invadersBaseSpeed: 1000,
   totalInvaders: 55,
   boomTime: 75, // milliseconds boom emoji shown
+  rowPoints: [30, 20, 20, 10, 10],
 
   //variables
+  invaders: [],
   paused: true,
   level: 1,
   score: 0,
@@ -48,7 +48,7 @@ const gameState = {
   playerPosition: 300,
   shotFired: false,
   shotPosition: { x: null, y: null },
-  invadersCurrentPosition: { x: 0, y: 50 },
+  invadersCurrentPosition: { x: 0, y: 0 },
   rightDirection: true,
   moveAmount: null,
   activeInvaders: 55,
@@ -66,6 +66,7 @@ const emojis = Object.freeze({
   boom: "💥",
   alienShip: "😈",
   deadPlayer: "☠",
+  invaders: ["🥳", "😃", "😎", "😮", "😟"],
 });
 
 gameState.playerY = gameState.gameHeight - 50 - player.getBoundingClientRect().height;
@@ -105,6 +106,27 @@ function lostFocus(e) {
   keys.forEach((key, i) => (keys[i] = false)); // not sure why just setting key=false doesn't work?!
 }
 
+function recalcInvaders() {
+  const invaderSize = (window.innerWidth * 7.1) / 100;
+  gameState.invaders.forEach((invader) => {
+    const col = invader.dataset.id % 11;
+    const row = Math.floor(invader.dataset.id / 11);
+
+    const x = gameState.invadersStartPosition.x + gameState.invadersCurrentPosition.x + col * invaderSize; // 7.1 us going to be vw
+    const y = gameState.invadersStartPosition.y + gameState.invadersCurrentPosition.y + row * invaderSize; //////////////////////////////////////////////////////////////////////
+    invader.style.left = x + "px";
+    invader.style.top = y + "px";
+  });
+}
+
+function handleResize(e) {
+  gameState.gameWidth = gameWindow.getBoundingClientRect().width;
+  console.log(gameState.gameWidth);
+  gameState.gameHeight = gameWindow.getBoundingClientRect().height;
+  recalcInvaders();
+  // do player and other things too
+}
+
 function setSpritePosition(sprite, { x, y }) {
   sprite.style.left = x + "px";
   sprite.style.top = y + "px";
@@ -142,19 +164,24 @@ function playSound(tickNumber) {
   }
 }
 
-function isCollided(element1, element2) {
-  const rect1 = element1.getBoundingClientRect();
-  const rect2 = element2.getBoundingClientRect();
+function isCollided(shot, target) {
+  const shotRect = shot.getBoundingClientRect();
+  const targetRect = target.getBoundingClientRect();
+
+  const midX = shotRect.left + shotRect.width / 2;
+  const midY = shotRect.top + shotRect.height / 2;
+
+  return targetRect.top <= midY && targetRect.bottom >= midY && targetRect.left <= midX && targetRect.right >= midX;
 }
 
-function createInvader(emoji, { x, y }, points, classList = []) {
+function createInvader(emoji, { x, y }, points, id, classList = []) {
   const newInvader = document.createElement("div");
   newInvader.innerHTML = emoji;
   newInvader.dataset.points = points;
   newInvader.classList.add("invader", ...classList);
-  newInvader.style.left = x;
-  newInvader.style.top = y;
-
+  newInvader.style.left = x + "px";
+  newInvader.style.top = y + "px";
+  newInvader.dataset.id = id;
   return newInvader;
 }
 
@@ -170,7 +197,23 @@ function createBomb(emoji, { x, y }) {
 
 // 11 columns x 5 rows
 
-function generateEmojis({ x, y }) {}
+function generateEmojis({ x, y }, childNode) {
+  // x,y are initial pixel offsets
+  // start: invadersStartPosition: { x: 0, y: 50 },
+  const howMany = 55;
+  const tempInvaders = [];
+  // width in %, height in px?
+  for (let i = 0; i < howMany; i++) {
+    const col = i % 11;
+    const row = Math.floor(i / 11);
+    const x = gameState.invadersStartPosition.x + col * ((window.innerWidth * 7.1) / 100); // 7.1 us going to be vw
+    const y = gameState.invadersStartPosition.y + row * ((window.innerWidth * 7.1) / 100); //////////////////////////////////////////////////////////////////////
+    tempInvaders[i] = createInvader(emojis.invaders[row], { x, y }, gameState.rowPoints[row], i);
+    childNode.appendChild(tempInvaders[i]);
+  }
+
+  return tempInvaders;
+}
 
 function killed(element, currentTimestep) {
   gameState.lastKilled = element;
@@ -215,10 +258,12 @@ function animate(timestep) {
     const shotRect = shot.getBoundingClientRect();
     const shotTop = shotRect.top;
     const shotMid = shotRect.left + shotRect.width / 2;
-    invaders.forEach((invader) => {
+
+    gameState.invaders.forEach((invader) => {
       // do we need to check for the presence of the hidden class to see if it's gone first?  -- YES!
       const rect = invader.getBoundingClientRect();
       if (!invader.classList.contains("hidden")) {
+        /// collision detection
         if (shotTop < rect.bottom && shotTop > rect.top && shotMid > rect.left && shotMid < rect.right) {
           // Hit logic
           gameState.shotFired = false;
@@ -243,7 +288,7 @@ function animate(timestep) {
     let swapped = false;
     if (gameState.rightDirection) {
       // first test if any are going to touch a wall
-      invaders.forEach((invader) => {
+      gameState.invaders.forEach((invader) => {
         if (!invader.classList.contains("hidden")) {
           if (invader.getBoundingClientRect().x + invader.getBoundingClientRect().width + gameState.moveAmount >= gameWindow.getBoundingClientRect().right) {
             gameState.rightDirection = false;
@@ -252,7 +297,7 @@ function animate(timestep) {
         }
       });
     } else {
-      invaders.forEach((invader) => {
+      gameState.invaders.forEach((invader) => {
         if (!invader.classList.contains("hidden")) {
           if (invader.getBoundingClientRect().x - gameState.moveAmount <= gameWindow.getBoundingClientRect().left) {
             gameState.rightDirection = true;
@@ -270,11 +315,13 @@ function animate(timestep) {
         gameState.invadersCurrentPosition.x -= gameState.moveAmount;
       }
     }
-    invaders.forEach((invader) => {
+    gameState.invaders.forEach((invader) => {
       invader.style.transform = "rotate(" + (360 / 8) * gameState.rollTick + "deg)";
     });
     playSound(gameState.rollTick);
-    setSpritePosition(invadersGrid, gameState.invadersCurrentPosition);
+
+    //setSpritePosition(invadersGrid, gameState.invadersCurrentPosition);
+    recalcInvaders();
   }
 
   // ********************************************************************************************
@@ -348,13 +395,17 @@ btnPlay.addEventListener("click", playButton);
 window.addEventListener("keydown", handleKeyDown);
 window.addEventListener("keyup", handleKeyUp);
 window.addEventListener("blur", lostFocus);
+window.addEventListener("resize", handleResize);
 
+// player initial position
 setSpritePosition(player, {
   x: gameState.playerPosition,
   y: gameState.playerY,
 });
 
-setSpritePosition(invadersGrid, gameState.invadersCurrentPosition);
+// setSpritePosition(invadersGrid, gameState.invadersCurrentPosition);
+gameState.invaders = generateEmojis(gameState.invadersStartPosition, game);
+gameState.append;
 
 updateScore(gameState.score);
 updateLevel(gameState.level);
