@@ -121,7 +121,7 @@ function recalcInvaders() {
 
 function handleResize(e) {
   gameState.gameWidth = gameWindow.getBoundingClientRect().width;
-  console.log(gameState.gameWidth);
+  //console.log(gameState.gameWidth);
   gameState.gameHeight = gameWindow.getBoundingClientRect().height;
   recalcInvaders();
   // do player and other things too
@@ -195,6 +195,13 @@ function createBomb(emoji, { x, y }) {
   return newBomb;
 }
 
+function addBomb({ x, y }) {
+  // adds a new bomb to the array of active bombs
+  const newBomb = createBomb(emojis.bomb, { x, y });
+  gameState.bombs.push(newBomb);
+  gameWindow.appendChild(newBomb);
+}
+
 // 11 columns x 5 rows
 
 function generateEmojis({ x, y }, childNode) {
@@ -223,8 +230,14 @@ function killed(element, currentTimestep) {
 
 function clearKilled(currentTimestep) {
   if (gameState.lastKilled !== null && currentTimestep >= gameState.lastKilledTime + gameState.boomTime) {
-    gameState.lastKilled.innerHTML = "";
-    gameState.lastKilled.classList.add("hidden");
+    gameState.lastKilled.remove(); // remove from DOM
+    //console.log("clear", gameState.invaders.indexOf(gameState.lastKilled));
+    //console.log(gameState.invaders);
+    gameState.invaders.splice(gameState.invaders.indexOf(gameState.lastKilled), 1); // remove from internal array
+    gameState.lastKilled = null;
+    //console.log(gameState.invaders);
+    // gameState.lastKilled.innerHTML = "";
+    // gameState.lastKilled.classList.add("hidden");
   }
 }
 /**********************************************************************************************/
@@ -259,7 +272,8 @@ function animate(timestep) {
     const shotTop = shotRect.top;
     const shotMid = shotRect.left + shotRect.width / 2;
 
-    gameState.invaders.forEach((invader) => {
+    gameState.invaders.some((invader) => {
+      // use [].some to return true and break from the loop
       // do we need to check for the presence of the hidden class to see if it's gone first?  -- YES!
       const rect = invader.getBoundingClientRect();
       if (!invader.classList.contains("hidden")) {
@@ -267,6 +281,9 @@ function animate(timestep) {
         if (shotTop < rect.bottom && shotTop > rect.top && shotMid > rect.left && shotMid < rect.right) {
           // Hit logic
           gameState.shotFired = false;
+          ///////////////////////////////////////////////////////////////////
+          ////////  TODO: REMOVE FROM THE DOM DON'T JUST HIDE ANYMORE!!!!!!!!!!
+          ////////////////////////////////////////////
           shot.classList.add("hidden");
           boom.currentTime = 0;
           boom.play();
@@ -276,6 +293,7 @@ function animate(timestep) {
           gameState.activeInvaders--;
           killed(invader, timestep);
           //recalcMoveAmount();
+          return true;
         }
       }
     });
@@ -325,10 +343,38 @@ function animate(timestep) {
   }
 
   // ********************************************************************************************
-  // drop bomb if needed and move it (them)
+  // Deal with Bombs
   // ********************************************************************************************
+  // check for hits first!
+  if (gameState.bombs.length) {
+    console.log("handle bombs");
+    gameState.bombs.forEach((bomb) => {
+      const bombRect = bomb.getBoundingClientRect();
 
+      // check structure hits
+
+      //check player hits
+      const playerRect = player.getBoundingClientRect();
+      if (bombRect.bottom >= playerRect.top && ((bombRect.left >= playerRect.left && bombRect.left <= playerRect.right) || (bombRect.right <= playerRect.right && bombRect.right >= playerRect.left))) {
+        console.log("hit player");
+      }
+
+      // check bottom screen hits
+    });
+  }
+  // stuff here
+
+  // add new bombs as needed
   // always have 1 dropping or multiple if on higher level
+  if (gameState.bombs.length < gameState.level) {
+    console.log("drop bomb");
+    // test if we need to add a bomb
+    const randomIndex = Math.floor(Math.random() * gameState.activeInvaders); // determine which invader is going to drop it --- later lets 'focus' this closer to player
+    const rect = gameState.invaders[randomIndex].getBoundingClientRect();
+    const x = rect.x + rect.width / 2; // middle of character?
+    const y = rect.bottom;
+    addBomb({ x, y });
+  }
 
   // ********************************************************************************************
   // handle shot move

@@ -119,6 +119,11 @@ header {
   font-size: 2rem;
 }
 
+.bomb {
+  font-size: 3rem;
+  position: absolute;
+}
+
 .invader {
   font-size: 5vw;
   position: absolute;
