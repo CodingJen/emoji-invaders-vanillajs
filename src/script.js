@@ -20,19 +20,21 @@ const heading = document.getElementById("head");
 // some game variable we need
 const gameState = {
   // static settings
+  bombSpeed: 500,
+  boomTime: 75, // milliseconds boom emoji shown
+  invadersBaseSpeed: 1000, // milliseconds per move initially
+  invadersInitialTop: 50,
+  invadersStartPosition: { x: 0, y: 50 },
   playerWidth: 50,
   playerY: 50,
   playerSpeed: 300,
+  rowPoints: [30, 20, 20, 10, 10],
   shotHeight: 40,
-  shotWidth: 10,
   shotStart: 50,
   shotSpeed: 500,
-  invadersStartPosition: { x: 0, y: 50 },
-  invadersInitialTop: 50,
-  invadersBaseSpeed: 1000,
+  shotWidth: 10,
   totalInvaders: 55,
-  boomTime: 75, // milliseconds boom emoji shown
-  rowPoints: [30, 20, 20, 10, 10],
+  volume: 0.1,
 
   //variables
   invaders: [],
@@ -55,8 +57,7 @@ const gameState = {
   lastKilled: null,
   lastKilledTime: null,
 
-  bombs: [],
-  bombPositions: [], // array of {x: ?, y: ?}
+  bombs: [], // {domBomb: DOMElement, position: {x: ?, y: ?}}
 };
 
 const emojis = Object.freeze({
@@ -189,16 +190,22 @@ function createBomb(emoji, { x, y }) {
   const newBomb = document.createElement("div");
   newBomb.innerHTML = emoji;
   newBomb.classList.add("bomb");
-  newBomb.style.left = x;
-  newBomb.style.top = y;
+  newBomb.style.left = x + "px";
+  newBomb.style.top = y + "px";
 
   return newBomb;
 }
 
+function clearBomb(bomb) {
+  bomb.domBomb.remove(); // remove from dom
+  gameState.bombs.splice(gameState.bombs.indexOf(bomb), 1); // remove from internal array
+}
+
 function addBomb({ x, y }) {
+  console.log("add", x, y);
   // adds a new bomb to the array of active bombs
   const newBomb = createBomb(emojis.bomb, { x, y });
-  gameState.bombs.push(newBomb);
+  gameState.bombs.push({ domBomb: newBomb, position: { x, y } });
   gameWindow.appendChild(newBomb);
 }
 
@@ -347,9 +354,8 @@ function animate(timestep) {
   // ********************************************************************************************
   // check for hits first!
   if (gameState.bombs.length) {
-    console.log("handle bombs");
-    gameState.bombs.forEach((bomb) => {
-      const bombRect = bomb.getBoundingClientRect();
+    gameState.bombs.some((bomb) => {
+      const bombRect = bomb.domBomb.getBoundingClientRect();
 
       // check structure hits
 
@@ -357,12 +363,26 @@ function animate(timestep) {
       const playerRect = player.getBoundingClientRect();
       if (bombRect.bottom >= playerRect.top && ((bombRect.left >= playerRect.left && bombRect.left <= playerRect.right) || (bombRect.right <= playerRect.right && bombRect.right >= playerRect.left))) {
         console.log("hit player");
+        clearBomb(bomb);
+        return true;
       }
 
       // check bottom screen hits
+      if (bombRect.top >= gameState.gameHeight) {
+        clearBomb(bomb);
+        return true;
+      }
     });
   }
-  // stuff here
+  // move any remaining bombs
+  if (gameState.bombs.length) {
+    gameState.bombs.forEach((bomb) => {
+      const x = bomb.position.x;
+      const y = bomb.position.y;
+      bomb.position.y += gameState.bombSpeed * deltaTime;
+      setSpritePosition(bomb.domBomb, { x, y });
+    });
+  }
 
   // add new bombs as needed
   // always have 1 dropping or multiple if on higher level
@@ -373,6 +393,7 @@ function animate(timestep) {
     const rect = gameState.invaders[randomIndex].getBoundingClientRect();
     const x = rect.x + rect.width / 2; // middle of character?
     const y = rect.bottom;
+    console.log("newbomb", x, y);
     addBomb({ x, y });
   }
 
@@ -452,6 +473,14 @@ setSpritePosition(player, {
 // setSpritePosition(invadersGrid, gameState.invadersCurrentPosition);
 gameState.invaders = generateEmojis(gameState.invadersStartPosition, game);
 gameState.append;
+
+//set volume
+audioD.volume = gameState.volume;
+audioC.volume = gameState.volume;
+audioAsharp.volume = gameState.volume;
+audioA.volume = gameState.volume;
+pew.volume = gameState.volume;
+boom.volume = gameState.volume;
 
 updateScore(gameState.score);
 updateLevel(gameState.level);
