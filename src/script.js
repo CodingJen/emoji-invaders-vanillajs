@@ -68,6 +68,7 @@ const emojis = Object.freeze({
   alienShip: "😈",
   deadPlayer: "☠",
   invaders: ["🥳", "😃", "😎", "😮", "😟"],
+  brick: "",
 });
 
 gameState.playerY = gameState.gameHeight - 50 - player.getBoundingClientRect().height;
@@ -107,17 +108,21 @@ function lostFocus(e) {
   keys.forEach((key, i) => (keys[i] = false)); // not sure why just setting key=false doesn't work?!
 }
 
-function recalcInvaders() {
-  const invaderSize = (window.innerWidth * 7.1) / 100;
-  gameState.invaders.forEach((invader) => {
-    const col = invader.dataset.id % 11;
-    const row = Math.floor(invader.dataset.id / 11);
+function setSpritePosition(sprite, { x, y }) {
+  sprite.style.left = x + "px";
+  sprite.style.top = y + "px";
+}
 
-    const x = gameState.invadersStartPosition.x + gameState.invadersCurrentPosition.x + col * invaderSize; // 7.1 us going to be vw
-    const y = gameState.invadersStartPosition.y + gameState.invadersCurrentPosition.y + row * invaderSize; //////////////////////////////////////////////////////////////////////
-    invader.style.left = x + "px";
-    invader.style.top = y + "px";
-  });
+function calculateInvaderPosition(index) {
+  const col = index % 11;
+  const row = Math.floor(index / 11);
+  const x = gameState.invadersStartPosition.x + gameState.invadersCurrentPosition.x + col * ((window.innerWidth * 7.1) / 100); // 7.1 us going to be vw
+  const y = gameState.invadersStartPosition.y + gameState.invadersCurrentPosition.y + row * ((window.innerWidth * 7.1) / 100); //////////////////////////////////////////////////////////////////////
+  return { x, y };
+}
+
+function recalcInvaders() {
+  gameState.invaders.forEach((invader) => setSpritePosition(invader, calculateInvaderPosition(invader.dataset.id)));
 }
 
 function handleResize(e) {
@@ -126,11 +131,6 @@ function handleResize(e) {
   gameState.gameHeight = gameWindow.getBoundingClientRect().height;
   recalcInvaders();
   // do player and other things too
-}
-
-function setSpritePosition(sprite, { x, y }) {
-  sprite.style.left = x + "px";
-  sprite.style.top = y + "px";
 }
 
 function updateScore(newScore) {
@@ -202,7 +202,6 @@ function clearBomb(bomb) {
 }
 
 function addBomb({ x, y }) {
-  console.log("add", x, y);
   // adds a new bomb to the array of active bombs
   const newBomb = createBomb(emojis.bomb, { x, y });
   gameState.bombs.push({ domBomb: newBomb, position: { x, y } });
@@ -218,11 +217,8 @@ function generateEmojis({ x, y }, childNode) {
   const tempInvaders = [];
   // width in %, height in px?
   for (let i = 0; i < howMany; i++) {
-    const col = i % 11;
     const row = Math.floor(i / 11);
-    const x = gameState.invadersStartPosition.x + col * ((window.innerWidth * 7.1) / 100); // 7.1 us going to be vw
-    const y = gameState.invadersStartPosition.y + row * ((window.innerWidth * 7.1) / 100); //////////////////////////////////////////////////////////////////////
-    tempInvaders[i] = createInvader(emojis.invaders[row], { x, y }, gameState.rowPoints[row], i);
+    tempInvaders[i] = createInvader(emojis.invaders[row], calculateInvaderPosition(i), gameState.rowPoints[row], i);
     childNode.appendChild(tempInvaders[i]);
   }
 
@@ -238,15 +234,11 @@ function killed(element, currentTimestep) {
 function clearKilled(currentTimestep) {
   if (gameState.lastKilled !== null && currentTimestep >= gameState.lastKilledTime + gameState.boomTime) {
     gameState.lastKilled.remove(); // remove from DOM
-    //console.log("clear", gameState.invaders.indexOf(gameState.lastKilled));
-    //console.log(gameState.invaders);
     gameState.invaders.splice(gameState.invaders.indexOf(gameState.lastKilled), 1); // remove from internal array
     gameState.lastKilled = null;
-    //console.log(gameState.invaders);
-    // gameState.lastKilled.innerHTML = "";
-    // gameState.lastKilled.classList.add("hidden");
   }
 }
+
 /**********************************************************************************************/
 /***********************************  MAIN GAME LOOP ******************************************/
 /**********************************************************************************************/
@@ -386,15 +378,11 @@ function animate(timestep) {
 
   // add new bombs as needed
   // always have 1 dropping or multiple if on higher level
-  if (gameState.bombs.length < gameState.level) {
-    console.log("drop bomb");
+  if (gameState.bombs.length < gameState.level && gameState.invaders.length) {
     // test if we need to add a bomb
     const randomIndex = Math.floor(Math.random() * gameState.activeInvaders); // determine which invader is going to drop it --- later lets 'focus' this closer to player
-    const rect = gameState.invaders[randomIndex].getBoundingClientRect();
-    const x = rect.x + rect.width / 2; // middle of character?
-    const y = rect.bottom;
-    console.log("newbomb", x, y);
-    addBomb({ x, y });
+    const invaderIndex = gameState.invaders[randomIndex].dataset.id;
+    addBomb(calculateInvaderPosition(invaderIndex));
   }
 
   // ********************************************************************************************
@@ -414,6 +402,7 @@ function animate(timestep) {
   // ********************************************************************************************
   // handle keys
   // ********************************************************************************************
+
   if (isKeyPressed(32)) {
     //space key
     if (!gameState.shotFired) {
@@ -449,6 +438,8 @@ function animate(timestep) {
         y: gameState.playerY,
       });
     }
+  }
+  if (isKeyPressed(80)) {
   }
 
   gameState.lastTime = timestep;
