@@ -35,6 +35,7 @@ const gameState = {
   shotWidth: 10,
   totalInvaders: 55,
   volume: 0.1,
+  ufoMinTime: 10000, // minimum milliseconds between ufo's
 
   //variables
   invaders: [],
@@ -49,7 +50,7 @@ const gameState = {
   gameHeight: gameWindow.getBoundingClientRect().height,
   playerPosition: 300,
   shotFired: false,
-  shotPosition: { x: null, y: null },
+  shotPosition: { x: 0, y: 0 },
   invadersCurrentPosition: { x: 0, y: 0 },
   rightDirection: true,
   moveAmount: null,
@@ -58,6 +59,10 @@ const gameState = {
   lastKilledTime: null,
 
   bombs: [], // {domBomb: DOMElement, position: {x: ?, y: ?}}
+
+  ufoActive: false,
+  ufoLastTime: null,
+  ufoPosition: 0,
 };
 
 const emojis = Object.freeze({
@@ -69,6 +74,7 @@ const emojis = Object.freeze({
   deadPlayer: "☠",
   invaders: ["🥳", "😃", "😎", "😮", "😟"],
   brick: "",
+  ufo: "🛸",
 });
 
 gameState.playerY = gameState.gameHeight - 50 - player.getBoundingClientRect().height;
@@ -108,26 +114,29 @@ function lostFocus(e) {
   keys.forEach((key, i) => (keys[i] = false)); // not sure why just setting key=false doesn't work?!
 }
 
-function setSpritePosition(sprite, { x, y }) {
-  sprite.style.left = x + "px";
-  sprite.style.top = y + "px";
+function spriteTranslate(element, { x, y }, rotation = 0) {
+  element.style.transform = `translate(${x}px, ${y}px) rotate(${rotation}deg)`;
+}
+
+function playerTranslate(playerElement, playerPosition) {
+  spriteTranslate(playerElement, { x: playerPosition, y: 0 }, 0);
 }
 
 function calculateInvaderPosition(index) {
   const col = index % 11;
   const row = Math.floor(index / 11);
   const x = gameState.invadersStartPosition.x + gameState.invadersCurrentPosition.x + col * ((window.innerWidth * 7.1) / 100); // 7.1 us going to be vw
-  const y = gameState.invadersStartPosition.y + gameState.invadersCurrentPosition.y + row * ((window.innerWidth * 7.1) / 100); //////////////////////////////////////////////////////////////////////
+  const y = gameState.invadersStartPosition.y + gameState.invadersCurrentPosition.y + row * ((window.innerWidth * 7.1) / 100);
   return { x, y };
 }
 
 function recalcInvaders() {
-  gameState.invaders.forEach((invader) => setSpritePosition(invader, calculateInvaderPosition(invader.dataset.id)));
+  //gameState.invaders.forEach((invader) => spriteTranslate(invader, calculateInvaderPosition(invader.dataset.id), (360 / 8) * gameState.rollTick));
+  gameState.invaders.forEach((invader) => spriteTranslate(invader, calculateInvaderPosition(invader.dataset.id), (360 / 8) * gameState.rollTick));
 }
 
 function handleResize(e) {
   gameState.gameWidth = gameWindow.getBoundingClientRect().width;
-  //console.log(gameState.gameWidth);
   gameState.gameHeight = gameWindow.getBoundingClientRect().height;
   recalcInvaders();
   // do player and other things too
@@ -190,8 +199,8 @@ function createBomb(emoji, { x, y }) {
   const newBomb = document.createElement("div");
   newBomb.innerHTML = emoji;
   newBomb.classList.add("bomb");
-  newBomb.style.left = x + "px";
-  newBomb.style.top = y + "px";
+  newBomb.style.left = 0 + "px";
+  newBomb.style.top = 0 + "px";
 
   return newBomb;
 }
@@ -205,6 +214,7 @@ function addBomb({ x, y }) {
   // adds a new bomb to the array of active bombs
   const newBomb = createBomb(emojis.bomb, { x, y });
   gameState.bombs.push({ domBomb: newBomb, position: { x, y } });
+  spriteTranslate(newBomb, { x, y });
   gameWindow.appendChild(newBomb);
 }
 
@@ -218,7 +228,8 @@ function generateEmojis({ x, y }, childNode) {
   // width in %, height in px?
   for (let i = 0; i < howMany; i++) {
     const row = Math.floor(i / 11);
-    tempInvaders[i] = createInvader(emojis.invaders[row], calculateInvaderPosition(i), gameState.rowPoints[row], i);
+    //tempInvaders[i] = createInvader(emojis.invaders[row], calculateInvaderPosition(i), gameState.rowPoints[row], i);
+    tempInvaders[i] = createInvader(emojis.invaders[row], { x: 0, y: 0 }, gameState.rowPoints[row], i);
     childNode.appendChild(tempInvaders[i]);
   }
 
@@ -280,9 +291,6 @@ function animate(timestep) {
         if (shotTop < rect.bottom && shotTop > rect.top && shotMid > rect.left && shotMid < rect.right) {
           // Hit logic
           gameState.shotFired = false;
-          ///////////////////////////////////////////////////////////////////
-          ////////  TODO: REMOVE FROM THE DOM DON'T JUST HIDE ANYMORE!!!!!!!!!!
-          ////////////////////////////////////////////
           shot.classList.add("hidden");
           boom.currentTime = 0;
           boom.play();
@@ -337,8 +345,18 @@ function animate(timestep) {
     });
     playSound(gameState.rollTick);
 
-    //setSpritePosition(invadersGrid, gameState.invadersCurrentPosition);
     recalcInvaders();
+  }
+
+  // ********************************************************************************************
+  // UFO Update
+  // ********************************************************************************************
+
+  if (!gameState.ufoActive) {
+    const test = Math.floor(Math.random() * 1000);
+    if (test === 420) {
+      console.error("startUFO");
+    }
   }
 
   // ********************************************************************************************
@@ -372,7 +390,7 @@ function animate(timestep) {
       const x = bomb.position.x;
       const y = bomb.position.y;
       bomb.position.y += gameState.bombSpeed * deltaTime;
-      setSpritePosition(bomb.domBomb, { x, y });
+      spriteTranslate(bomb.domBomb, { x, y });
     });
   }
 
@@ -390,12 +408,11 @@ function animate(timestep) {
   // ********************************************************************************************
   if (gameState.shotFired) {
     gameState.shotPosition.y -= gameState.shotSpeed * deltaTime;
-    //if (gameState.shotPosition.y >= gameState.gameHeight) {
     if (gameState.shotPosition.y <= 0) {
       gameState.shotFired = false;
       shot.classList.add("hidden");
     } else {
-      setSpritePosition(shot, gameState.shotPosition);
+      spriteTranslate(shot, gameState.shotPosition);
     }
   }
 
@@ -411,7 +428,7 @@ function animate(timestep) {
         x: gameState.playerPosition + gameState.playerWidth / 2 - gameState.shotWidth / 2,
         y: gameState.playerY - shot.getBoundingClientRect().height / 2,
       };
-      setSpritePosition(shot, gameState.shotPosition);
+      spriteTranslate(shot, gameState.shotPosition);
       shot.classList.remove("hidden");
       pew.currentTime = 0;
       pew.play();
@@ -422,10 +439,7 @@ function animate(timestep) {
     const newPos = gameState.playerPosition - gameState.playerSpeed * deltaTime;
     if (newPos > 0) {
       gameState.playerPosition = newPos;
-      setSpritePosition(player, {
-        x: gameState.playerPosition,
-        y: gameState.playerY,
-      });
+      playerTranslate(player, gameState.playerPosition);
     }
   }
   if (isKeyPressed(39)) {
@@ -433,10 +447,7 @@ function animate(timestep) {
     const newPos = gameState.playerPosition + gameState.playerSpeed * deltaTime;
     if (newPos <= gameState.gameWidth - player.getBoundingClientRect().width) {
       gameState.playerPosition += gameState.playerSpeed * deltaTime;
-      setSpritePosition(player, {
-        x: gameState.playerPosition,
-        y: gameState.playerY,
-      });
+      playerTranslate(player, gameState.playerPosition);
     }
   }
   if (isKeyPressed(80)) {
@@ -456,14 +467,17 @@ window.addEventListener("blur", lostFocus);
 window.addEventListener("resize", handleResize);
 
 // player initial position
-setSpritePosition(player, {
-  x: gameState.playerPosition,
-  y: gameState.playerY,
-});
+// setSpritePosition(player, {
+//   x: gameState.playerPosition,
+//   y: gameState.playerY,
+// });
+
+playerTranslate(player, gameState.playerPosition);
 
 // setSpritePosition(invadersGrid, gameState.invadersCurrentPosition);
 gameState.invaders = generateEmojis(gameState.invadersStartPosition, game);
-gameState.append;
+//gameState.append;
+recalcInvaders();
 
 //set volume
 audioD.volume = gameState.volume;

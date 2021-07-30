@@ -35,7 +35,7 @@ body {
 }
 
 header {
-  padding: 1rem;
+  padding-top: 2rem;
   perspective: 100px;
   perspective-origin: 50% 100%;
 }
@@ -98,12 +98,12 @@ header {
   visibility: hidden;
 }
 
-.box {
+.player {
   position: absolute;
   width: 50px;
   height: 20px;
   /*   background-color: orange; */
-  /*   left: 00px; */
+  left: 0;
   bottom: 50px;
   font-size: 4rem;
   text-shadow: 0px 0px 10px rgba(255, 255, 255, 0.3);
@@ -111,11 +111,6 @@ header {
 
 .shot {
   position: absolute;
-  width: 10px;
-  height: 40px;
-  /*   background-color: yellow; */
-  left: 120px;
-  bottom: 90px;
   font-size: 2rem;
 }
 
