@@ -1,21 +1,21 @@
 // basic elements of game
-const gameWindow = document.getElementById("game");
+const gameWindow = document.getElementById('game');
 
-const scoreElement = document.getElementById("score");
-const levelElement = document.getElementById("level");
+const scoreElement = document.getElementById('score');
+const levelElement = document.getElementById('level');
 
-const player = document.getElementById("player");
-const shot = document.getElementById("shot");
+const player = document.getElementById('player');
+const shot = document.getElementById('shot');
 
-const audioD = document.getElementById("audio-d");
-const audioC = document.getElementById("audio-c");
-const audioAsharp = document.getElementById("audio-asharp");
-const audioA = document.getElementById("audio-a");
-const pew = document.getElementById("pew");
-const boom = document.getElementById("boom");
+const audioD = document.getElementById('audio-d');
+const audioC = document.getElementById('audio-c');
+const audioAsharp = document.getElementById('audio-asharp');
+const audioA = document.getElementById('audio-a');
+const pew = document.getElementById('pew');
+const boom = document.getElementById('boom');
 
-const btnPlay = document.getElementById("play-btn");
-const heading = document.getElementById("head");
+const btnPlay = document.getElementById('play-btn');
+const heading = document.getElementById('head');
 
 // some game variable we need
 const gameState = {
@@ -68,16 +68,16 @@ const gameState = {
 };
 
 const emojis = Object.freeze({
-  player: "🌋",
-  shot: "🔥",
-  bomb: "💣",
-  boom: "💥",
-  alienShip: "😈",
-  deadPlayer: "☠",
-  invaders: ["🥳", "😃", "😎", "😮", "😟"],
-  brick: "",
-  ufo: "🛸",
-  bunker: "👾",
+  player: '🌋',
+  shot: '🔥',
+  bomb: '💣',
+  boom: '💥',
+  alienShip: '😈',
+  deadPlayer: '☠',
+  invaders: ['🥳', '😃', '😎', '😮', '😟'],
+  brick: '',
+  ufo: '🛸',
+  bunker: '👾',
 });
 
 let keys = [];
@@ -99,7 +99,7 @@ function gameInit() {
 }
 
 function gameReset(leveledUp) {
-  console.log("gameReset");
+  console.log('gameReset');
   if (leveledUp) {
     gameState.level++;
   }
@@ -119,7 +119,7 @@ function recalcMoveAmountX() {
 
 function playButton(e) {
   gameState.paused = !gameState.paused;
-  btnPlay.innerHTML = gameState.paused ? "Play!" : "Pause";
+  btnPlay.innerHTML = gameState.paused ? 'Play!' : 'Pause';
 
   if (!gameState.paused) {
     // heading.classList.add("to-top");
@@ -226,22 +226,22 @@ function isCollided(shot, target) {
 }
 
 function createInvader(emoji, { x, y }, points, id, classList = []) {
-  const newInvader = document.createElement("div");
+  const newInvader = document.createElement('div');
   newInvader.innerHTML = emoji;
   newInvader.dataset.points = points;
-  newInvader.classList.add("invader", ...classList);
-  newInvader.style.left = x + "px";
-  newInvader.style.top = y + "px";
+  newInvader.classList.add('invader', ...classList);
+  newInvader.style.left = x + 'px';
+  newInvader.style.top = y + 'px';
   newInvader.dataset.id = id;
   return newInvader;
 }
 
 function createBomb(emoji, { x, y }) {
-  const newBomb = document.createElement("div");
+  const newBomb = document.createElement('div');
   newBomb.innerHTML = emoji;
-  newBomb.classList.add("bomb");
-  newBomb.style.left = 0 + "px";
-  newBomb.style.top = 0 + "px";
+  newBomb.classList.add('bomb');
+  newBomb.style.left = 0 + 'px';
+  newBomb.style.top = 0 + 'px';
 
   return newBomb;
 }
@@ -310,18 +310,18 @@ function createBunker({ x: screenX, y: screenY }) {
   console.log(screenX, screenY);
   const width = (0.5 * gameState.gameWidth) / 100;
   const height = (0.5 * gameState.gameHeight) / 100;
-  const div = document.createElement("div");
-  div.classList.add("bunker");
+  const div = document.createElement('div');
+  div.classList.add('bunker');
   for (let y = 0; y < 12; y++) {
     for (let x = 0; x < 16; x++) {
       if (bunker[y][x] === 1) {
-        const currentElement = document.createElement("div");
-        currentElement.classList.add("bunker-element");
+        const currentElement = document.createElement('div');
+        currentElement.classList.add('bunker-element');
         currentElement.innerHTML = emojis.bunker;
         const left = screenX + x * width;
-        currentElement.style.left = left + "px";
+        currentElement.style.left = left + 'px';
         const top = screenY + y * height;
-        currentElement.style.top = top + "px";
+        currentElement.style.top = top + 'px';
         console.log(left, top);
         div.appendChild(currentElement);
       }
@@ -332,7 +332,7 @@ function createBunker({ x: screenX, y: screenY }) {
 
 //
 function createBunkers() {
-  const div = document.createElement("div");
+  const div = document.createElement('div');
 
   div.appendChild(createBunker({ x: 50, y: 700 }));
   div.appendChild(createBunker({ x: 150, y: 700 }));
@@ -369,7 +369,7 @@ function animate(timestep) {
   clearKilled(timestep);
 
   if (!gameState.invaders.length) {
-    console.log("WIN");
+    console.log('WIN');
     // gameState.paused = true;
 
     gameReset(true);
@@ -388,12 +388,12 @@ function animate(timestep) {
       // use [].some to return true and break from the loop
       // do we need to check for the presence of the hidden class to see if it's gone first?  -- YES!
       const rect = invader.getBoundingClientRect();
-      if (!invader.classList.contains("hidden")) {
+      if (!invader.classList.contains('hidden')) {
         /// collision detection
         if (shotTop < rect.bottom && shotTop > rect.top && shotMid > rect.left && shotMid < rect.right) {
           // Hit logic
           gameState.shotFired = false;
-          shot.classList.add("hidden");
+          shot.classList.add('hidden');
           boom.currentTime = 0;
           boom.play();
           // invader.classList.add("hidden");
@@ -416,7 +416,7 @@ function animate(timestep) {
     if (gameState.rightDirection) {
       // first test if any are going to touch a wall
       gameState.invaders.forEach((invader) => {
-        if (!invader.classList.contains("hidden")) {
+        if (!invader.classList.contains('hidden')) {
           if (invader.getBoundingClientRect().x + invader.getBoundingClientRect().width + gameState.moveAmount.x >= gameWindow.getBoundingClientRect().right) {
             gameState.rightDirection = false;
             swapped = true;
@@ -425,7 +425,7 @@ function animate(timestep) {
       });
     } else {
       gameState.invaders.forEach((invader) => {
-        if (!invader.classList.contains("hidden")) {
+        if (!invader.classList.contains('hidden')) {
           if (invader.getBoundingClientRect().x - gameState.moveAmount.x <= gameWindow.getBoundingClientRect().left) {
             gameState.rightDirection = true;
             swapped = true;
@@ -443,7 +443,7 @@ function animate(timestep) {
       }
     }
     gameState.invaders.forEach((invader) => {
-      invader.style.transform = "rotate(" + (360 / 8) * gameState.rollTick + "deg)";
+      invader.style.transform = 'rotate(' + (360 / 8) * gameState.rollTick + 'deg)';
     });
     playSound(gameState.rollTick);
 
@@ -457,7 +457,7 @@ function animate(timestep) {
   if (!gameState.ufoActive) {
     const test = Math.floor(Math.random() * 1000);
     if (test === 420) {
-      console.error("startUFO");
+      console.error('startUFO');
     }
   }
 
@@ -473,8 +473,11 @@ function animate(timestep) {
 
       //check player hits
       const playerRect = player.getBoundingClientRect();
-      if (bombRect.bottom >= playerRect.top && ((bombRect.left >= playerRect.left && bombRect.left <= playerRect.right) || (bombRect.right <= playerRect.right && bombRect.right >= playerRect.left))) {
-        console.log("hit player");
+      if (
+        bombRect.bottom >= playerRect.top &&
+        ((bombRect.left >= playerRect.left && bombRect.left <= playerRect.right) || (bombRect.right <= playerRect.right && bombRect.right >= playerRect.left))
+      ) {
+        console.log('hit player');
         clearBomb(bomb);
         return true;
       }
@@ -512,7 +515,7 @@ function animate(timestep) {
     gameState.shotPosition.y -= gameState.shotSpeed * deltaTime;
     if (gameState.shotPosition.y <= 0) {
       gameState.shotFired = false;
-      shot.classList.add("hidden");
+      shot.classList.add('hidden');
     } else {
       spriteTranslate(shot, gameState.shotPosition);
     }
@@ -531,7 +534,7 @@ function animate(timestep) {
         y: gameState.playerY - shot.getBoundingClientRect().height / 2,
       };
       spriteTranslate(shot, gameState.shotPosition);
-      shot.classList.remove("hidden");
+      shot.classList.remove('hidden');
       pew.currentTime = 0;
       pew.play();
     }
@@ -562,11 +565,11 @@ function animate(timestep) {
 // ********************************************************************************************
 // setup listeners
 // ********************************************************************************************
-btnPlay.addEventListener("click", playButton);
-window.addEventListener("keydown", handleKeyDown);
-window.addEventListener("keyup", handleKeyUp);
-window.addEventListener("blur", lostFocus);
-window.addEventListener("resize", handleResize);
+btnPlay.addEventListener('click', playButton);
+window.addEventListener('keydown', handleKeyDown);
+window.addEventListener('keyup', handleKeyUp);
+window.addEventListener('blur', lostFocus);
+window.addEventListener('resize', handleResize);
 
 gameInit(); // setup begining stuff once
 
