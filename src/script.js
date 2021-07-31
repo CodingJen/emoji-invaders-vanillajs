@@ -53,7 +53,9 @@ const gameState = {
   shotPosition: { x: 0, y: 0 },
   invadersCurrentPosition: { x: 0, y: 0 },
   rightDirection: true,
-  moveAmount: null,
+  moveAmount: { x: null, y: 40 },
+  moveAmountX: null,
+  moveAmountY: 40,
   activeInvaders: 55,
   lastKilled: null,
   lastKilledTime: null,
@@ -77,13 +79,41 @@ const emojis = Object.freeze({
   ufo: "🛸",
 });
 
-gameState.playerY = gameState.gameHeight - 50 - player.getBoundingClientRect().height;
-recalcMoveAmount();
-
 let keys = [];
 
-function recalcMoveAmount() {
-  gameState.moveAmount = gameState.gameWidth / (14 * 8 * (gameState.activeInvaders / gameState.totalInvaders)); // (11 chars + 3spaces)* 8 moves per char // (active cols + 3) * 8/col
+function gameInit() {
+  //set volume
+  audioD.volume = gameState.volume;
+  audioC.volume = gameState.volume;
+  audioAsharp.volume = gameState.volume;
+  audioA.volume = gameState.volume;
+  pew.volume = gameState.volume;
+  boom.volume = gameState.volume;
+
+  // player initial position
+  gameState.playerY = gameState.gameHeight - 50 - player.getBoundingClientRect().height;
+  playerTranslate(player, gameState.playerPosition);
+
+  recalcMoveAmountX();
+}
+
+function gameReset(leveledUp) {
+  console.log("gameReset");
+  if (leveledUp) {
+    gameState.level++;
+  }
+  gameState.invadersCurrentPosition.x = gameState.invadersStartPosition.x;
+  gameState.invadersCurrentPosition.y = gameState.invadersStartPosition.y + (gameState.level - 1) * gameState.moveAmount.y;
+
+  updateScore(gameState.score);
+  updateLevel(gameState.level);
+  gameState.invaders = generateEmojis(gameState.invadersStartPosition, game);
+  recalcInvaders();
+}
+
+function recalcMoveAmountX() {
+  gameState.moveAmount.x = gameState.gameWidth / (14 * 8 * 1); // (11 chars + 3spaces)* 8 moves per char // (active cols + 3) * 8/col
+  //gameState.moveAmount.x = gameState.gameWidth / (14 * 8 * (gameState.activeInvaders / gameState.totalInvaders)); // (11 chars + 3spaces)* 8 moves per char // (active cols + 3) * 8/col
 }
 
 function playButton(e) {
@@ -125,8 +155,10 @@ function playerTranslate(playerElement, playerPosition) {
 function calculateInvaderPosition(index) {
   const col = index % 11;
   const row = Math.floor(index / 11);
-  const x = gameState.invadersStartPosition.x + gameState.invadersCurrentPosition.x + col * ((window.innerWidth * 7.1) / 100); // 7.1 us going to be vw
-  const y = gameState.invadersStartPosition.y + gameState.invadersCurrentPosition.y + row * ((window.innerWidth * 7.1) / 100);
+  const x = gameState.invadersCurrentPosition.x + col * ((window.innerWidth * 7.1) / 100); // 7.1 us going to be vw
+  //const x = gameState.invadersStartPosition.x + gameState.invadersCurrentPosition.x + col * ((window.innerWidth * 7.1) / 100); // 7.1 us going to be vw
+  const y = gameState.invadersCurrentPosition.y + row * ((window.innerWidth * 7.1) / 100);
+  //const y = gameState.invadersStartPosition.y + gameState.invadersCurrentPosition.y + row * ((window.innerWidth * 7.1) / 100);
   return { x, y };
 }
 
@@ -135,10 +167,18 @@ function recalcInvaders() {
   gameState.invaders.forEach((invader) => spriteTranslate(invader, calculateInvaderPosition(invader.dataset.id), (360 / 8) * gameState.rollTick));
 }
 
+function resizePlayer(lastWidth) {
+  const lastPlayerPercent = gameState.playerPosition / lastWidth;
+  gameState.playerPosition = gameState.gameWidth * lastPlayerPercent;
+  spriteTranslate(player, { x: gameState.playerPosition, y: 0 });
+}
+
 function handleResize(e) {
+  const lastWidth = gameState.gameWidth;
   gameState.gameWidth = gameWindow.getBoundingClientRect().width;
   gameState.gameHeight = gameWindow.getBoundingClientRect().height;
   recalcInvaders();
+  resizePlayer(lastWidth);
   // do player and other things too
 }
 
@@ -262,7 +302,8 @@ function animate(timestep) {
     return;
   }
   let doAnimate = false;
-  if (timestep >= gameState.lastAnimationTick + gameState.invadersBaseSpeed * (gameState.activeInvaders / gameState.totalInvaders)) {
+  //if (timestep >= gameState.lastAnimationTick + gameState.invadersBaseSpeed * (gameState.activeInvaders / gameState.totalInvaders)) {
+  if (timestep >= gameState.lastAnimationTick + gameState.invadersBaseSpeed * (gameState.invaders.length / gameState.totalInvaders)) {
     gameState.lastAnimationTick = timestep;
     doAnimate = true;
     if (gameState.rollTick < 8) gameState.rollTick++;
@@ -272,6 +313,13 @@ function animate(timestep) {
 
   // clear off screen what isn't needed first
   clearKilled(timestep);
+
+  if (!gameState.invaders.length) {
+    console.log("WIN");
+    // gameState.paused = true;
+
+    gameReset(true);
+  }
 
   // handle other animations first, before player
   // we're moving, check collision before moving again
@@ -315,7 +363,7 @@ function animate(timestep) {
       // first test if any are going to touch a wall
       gameState.invaders.forEach((invader) => {
         if (!invader.classList.contains("hidden")) {
-          if (invader.getBoundingClientRect().x + invader.getBoundingClientRect().width + gameState.moveAmount >= gameWindow.getBoundingClientRect().right) {
+          if (invader.getBoundingClientRect().x + invader.getBoundingClientRect().width + gameState.moveAmount.x >= gameWindow.getBoundingClientRect().right) {
             gameState.rightDirection = false;
             swapped = true;
           }
@@ -324,7 +372,7 @@ function animate(timestep) {
     } else {
       gameState.invaders.forEach((invader) => {
         if (!invader.classList.contains("hidden")) {
-          if (invader.getBoundingClientRect().x - gameState.moveAmount <= gameWindow.getBoundingClientRect().left) {
+          if (invader.getBoundingClientRect().x - gameState.moveAmount.x <= gameWindow.getBoundingClientRect().left) {
             gameState.rightDirection = true;
             swapped = true;
           }
@@ -332,12 +380,12 @@ function animate(timestep) {
       });
     }
     if (swapped) {
-      gameState.invadersCurrentPosition.y += 40;
+      gameState.invadersCurrentPosition.y += gameState.moveAmount.y;
     } else {
       if (gameState.rightDirection) {
-        gameState.invadersCurrentPosition.x += gameState.moveAmount;
+        gameState.invadersCurrentPosition.x += gameState.moveAmount.x;
       } else {
-        gameState.invadersCurrentPosition.x -= gameState.moveAmount;
+        gameState.invadersCurrentPosition.x -= gameState.moveAmount.x;
       }
     }
     gameState.invaders.forEach((invader) => {
@@ -398,7 +446,7 @@ function animate(timestep) {
   // always have 1 dropping or multiple if on higher level
   if (gameState.bombs.length < gameState.level && gameState.invaders.length) {
     // test if we need to add a bomb
-    const randomIndex = Math.floor(Math.random() * gameState.activeInvaders); // determine which invader is going to drop it --- later lets 'focus' this closer to player
+    const randomIndex = Math.floor(Math.random() * gameState.invaders.length); // determine which invader is going to drop it --- later lets 'focus' this closer to player
     const invaderIndex = gameState.invaders[randomIndex].dataset.id;
     addBomb(calculateInvaderPosition(invaderIndex));
   }
@@ -466,30 +514,9 @@ window.addEventListener("keyup", handleKeyUp);
 window.addEventListener("blur", lostFocus);
 window.addEventListener("resize", handleResize);
 
-// player initial position
-// setSpritePosition(player, {
-//   x: gameState.playerPosition,
-//   y: gameState.playerY,
-// });
+gameInit(); // setup begining stuff once
 
-playerTranslate(player, gameState.playerPosition);
-
-// setSpritePosition(invadersGrid, gameState.invadersCurrentPosition);
-gameState.invaders = generateEmojis(gameState.invadersStartPosition, game);
-//gameState.append;
-recalcInvaders();
-
-//set volume
-audioD.volume = gameState.volume;
-audioC.volume = gameState.volume;
-audioAsharp.volume = gameState.volume;
-audioA.volume = gameState.volume;
-pew.volume = gameState.volume;
-boom.volume = gameState.volume;
-
-updateScore(gameState.score);
-updateLevel(gameState.level);
-//setSpritePosition(invadersGrid, { x: 0, y: gameState.invadersInitialTop });
+gameReset(false); // build level and stuff
 
 // once all is setup lets get this going!
 window.requestAnimationFrame(animate);
