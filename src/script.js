@@ -77,6 +77,7 @@ const emojis = Object.freeze({
   invaders: ["🥳", "😃", "😎", "😮", "😟"],
   brick: "",
   ufo: "🛸",
+  bunker: "👾",
 });
 
 let keys = [];
@@ -155,10 +156,10 @@ function playerTranslate(playerElement, playerPosition) {
 function calculateInvaderPosition(index) {
   const col = index % 11;
   const row = Math.floor(index / 11);
-  const x = gameState.invadersCurrentPosition.x + col * ((window.innerWidth * 7.1) / 100); // 7.1 us going to be vw
-  //const x = gameState.invadersStartPosition.x + gameState.invadersCurrentPosition.x + col * ((window.innerWidth * 7.1) / 100); // 7.1 us going to be vw
-  const y = gameState.invadersCurrentPosition.y + row * ((window.innerWidth * 7.1) / 100);
-  //const y = gameState.invadersStartPosition.y + gameState.invadersCurrentPosition.y + row * ((window.innerWidth * 7.1) / 100);
+  //const x = gameState.invadersCurrentPosition.x + col * ((window.innerWidth * 7.1) / 100); // 7.1 us going to be vw
+  const x = gameState.invadersCurrentPosition.x + col * ((gameState.gameWidth * 7.1) / 100); // 7.1 us going to be vw
+  //const y = gameState.invadersCurrentPosition.y + row * ((window.innerWidth * 7.1) / 100);
+  const y = gameState.invadersCurrentPosition.y + row * ((gameState.gameWidth * 7.1) / 100);
   return { x, y };
 }
 
@@ -289,6 +290,59 @@ function clearKilled(currentTimestep) {
     gameState.lastKilled = null;
   }
 }
+
+const bunker = [
+  [0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0],
+  [0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0],
+  [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+  [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+  [1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1],
+  [1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1],
+  [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+  [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+];
+
+function createBunker({ x: screenX, y: screenY }) {
+  console.log(screenX, screenY);
+  const width = (0.5 * gameState.gameWidth) / 100;
+  const height = (0.5 * gameState.gameHeight) / 100;
+  const div = document.createElement("div");
+  div.classList.add("bunker");
+  for (let y = 0; y < 12; y++) {
+    for (let x = 0; x < 16; x++) {
+      if (bunker[y][x] === 1) {
+        const currentElement = document.createElement("div");
+        currentElement.classList.add("bunker-element");
+        currentElement.innerHTML = emojis.bunker;
+        const left = screenX + x * width;
+        currentElement.style.left = left + "px";
+        const top = screenY + y * height;
+        currentElement.style.top = top + "px";
+        console.log(left, top);
+        div.appendChild(currentElement);
+      }
+    }
+  }
+  return div;
+}
+
+//
+function createBunkers() {
+  const div = document.createElement("div");
+
+  div.appendChild(createBunker({ x: 50, y: 700 }));
+  div.appendChild(createBunker({ x: 150, y: 700 }));
+  div.appendChild(createBunker({ x: 250, y: 700 }));
+  div.appendChild(createBunker({ x: 350, y: 700 }));
+
+  return div;
+}
+
+function resizeBunker(bunker) {}
 
 /**********************************************************************************************/
 /***********************************  MAIN GAME LOOP ******************************************/
@@ -517,6 +571,8 @@ window.addEventListener("resize", handleResize);
 gameInit(); // setup begining stuff once
 
 gameReset(false); // build level and stuff
+
+gameWindow.appendChild(createBunkers());
 
 // once all is setup lets get this going!
 window.requestAnimationFrame(animate);

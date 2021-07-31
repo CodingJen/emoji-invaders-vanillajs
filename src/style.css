@@ -126,6 +126,17 @@ header {
   /* transition: all 0.5s; */
 }
 
+.bunker {
+  font-size: 1rem;
+  position: absolute;
+}
+
+.bunker-element {
+  position: absolute;
+  /* width: 0.5%; */
+  /* height: 0.5%; */
+}
+
 .score-container {
   position: absolute;
 
