@@ -10,6 +10,7 @@
   margin: 0;
   box-sizing: border-box;
 }
+
 html {
   padding: 0;
   margin: 0;
@@ -20,16 +21,17 @@ body {
   padding: 0;
   margin: 0;
   height: 100vh;
-
   background-color: dimgray;
   overflow: hidden;
 }
+
 .app-wrapper {
   width: 100vw;
   height: 100vh;
   display: flex;
   flex-direction: column;
   gap: 10px;
+
   /* justify-content: center;
   align-items: center; */
 }
@@ -42,19 +44,23 @@ header {
 
 .logo {
   position: relative;
+
   /* border: 1px solid red; */
   font-family: 'MachineStd', sans-serif;
   font-size: 5rem;
   text-align: center;
   line-height: 95%;
   color: red;
+
   /* text-shadow: 0 -0.8rem orange, 0 -1.6rem red; */
   letter-spacing: 2px;
   transform: scaleY(1) rotateX(-15deg);
   transform-origin: 50% 100%;
 }
+
 .logo::before {
   content: 'EMOJI INVADERS';
+
   /* outline: 1px solid orange; */
   position: absolute;
   top: 0;
@@ -68,6 +74,7 @@ header {
 
 .logo::after {
   content: 'EMOJI INVADERS';
+
   /* outline: 1px solid yellow; */
   position: absolute;
   top: 0;
@@ -102,11 +109,12 @@ header {
   position: absolute;
   width: 50px;
   height: 20px;
+
   /*   background-color: orange; */
   left: 0;
   bottom: 50px;
   font-size: 4rem;
-  text-shadow: 0px 0px 10px rgba(255, 255, 255, 0.3);
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
 }
 
 .shot {
@@ -122,7 +130,9 @@ header {
 .invader {
   font-size: 5vw;
   position: absolute;
+
   /* animation: 1s linear 0s infinite alternate none running grow1; */
+
   /* transition: all 0.5s; */
 }
 
@@ -134,13 +144,14 @@ header {
 .bunker-element {
   position: absolute;
   background-color: purple;
+
   /* width: 0.5%; */
+
   /* height: 0.5%; */
 }
 
 .score-container {
   position: absolute;
-
   max-width: 200px;
   font-family: sans-serif;
   font-size: 2rem;
@@ -152,16 +163,19 @@ header {
     'level-label level';
 }
 
-#score-la bel {
+#score-label {
   grid-area: score-label;
 }
+
 #score {
   grid-area: score;
   text-align: center;
 }
+
 #level-label {
   grid-area: level-label;
 }
+
 #level {
   grid-area: level;
 }
@@ -184,6 +198,7 @@ footer {
   0% {
     transform: scale(1);
   }
+
   50% {
     transform: scale(0.8);
   }
