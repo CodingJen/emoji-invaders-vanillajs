@@ -1,6 +1,6 @@
 @font-face {
-  font-family: "MachineStd";
-  src: url("https://f000.backblazeb2.com/file/JensBucket/MachineStd.otf") format("opentype");
+  font-family: 'MachineStd';
+  src: url('https://f000.backblazeb2.com/file/JensBucket/MachineStd.otf') format('opentype');
 }
 
 *,
@@ -43,7 +43,7 @@ header {
 .logo {
   position: relative;
   /* border: 1px solid red; */
-  font-family: "MachineStd", sans-serif;
+  font-family: 'MachineStd', sans-serif;
   font-size: 5rem;
   text-align: center;
   line-height: 95%;
@@ -54,7 +54,7 @@ header {
   transform-origin: 50% 100%;
 }
 .logo::before {
-  content: "EMOJI INVADERS";
+  content: 'EMOJI INVADERS';
   /* outline: 1px solid orange; */
   position: absolute;
   top: 0;
@@ -67,7 +67,7 @@ header {
 }
 
 .logo::after {
-  content: "EMOJI INVADERS";
+  content: 'EMOJI INVADERS';
   /* outline: 1px solid yellow; */
   position: absolute;
   top: 0;
@@ -133,6 +133,7 @@ header {
 
 .bunker-element {
   position: absolute;
+  background-color: purple;
   /* width: 0.5%; */
   /* height: 0.5%; */
 }
@@ -147,8 +148,8 @@ header {
   padding: 0.5rem;
   display: grid;
   grid-template-areas:
-    "score-label score"
-    "level-label level";
+    'score-label score'
+    'level-label level';
 }
 
 #score-la bel {
@@ -171,7 +172,7 @@ header {
 }
 
 footer {
-  font-family: "MachineStd", sans-serif;
+  font-family: 'MachineStd', sans-serif;
   font-size: 2rem;
   color: yellow;
   width: 100%;

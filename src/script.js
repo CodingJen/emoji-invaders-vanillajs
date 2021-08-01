@@ -1,3 +1,13 @@
+/**
+ * @author Jennifer Fix <jfix@example.com>
+ */
+
+/**   TODO LIST:
+ *  - Missed shots blow up at top of screen
+ *  - Missed bombs blow up at bottom of screen
+ *  - High score stored in localStorage
+ */
+
 // basic elements of game
 const gameWindow = document.getElementById('game');
 
@@ -15,7 +25,7 @@ const pew = document.getElementById('pew');
 const boom = document.getElementById('boom');
 
 const btnPlay = document.getElementById('play-btn');
-const heading = document.getElementById('head');
+// const heading = document.getElementById('head');
 
 // some game variable we need
 const gameState = {
@@ -37,7 +47,7 @@ const gameState = {
   volume: 0.1,
   ufoMinTime: 10000, // minimum milliseconds between ufo's
 
-  //variables
+  // variables
   invaders: [],
   paused: true,
   level: 1,
@@ -80,10 +90,10 @@ const emojis = Object.freeze({
   bunker: '👾',
 });
 
-let keys = [];
+const keys = [];
 
 function gameInit() {
-  //set volume
+  // set volume
   audioD.volume = gameState.volume;
   audioC.volume = gameState.volume;
   audioAsharp.volume = gameState.volume;
@@ -99,25 +109,25 @@ function gameInit() {
 }
 
 function gameReset(leveledUp) {
-  console.log('gameReset');
   if (leveledUp) {
-    gameState.level++;
+    gameState.level += 1;
   }
   gameState.invadersCurrentPosition.x = gameState.invadersStartPosition.x;
-  gameState.invadersCurrentPosition.y = gameState.invadersStartPosition.y + (gameState.level - 1) * gameState.moveAmount.y;
+  gameState.invadersCurrentPosition.y =
+    gameState.invadersStartPosition.y + (gameState.level - 1) * gameState.moveAmount.y;
 
   updateScore(gameState.score);
   updateLevel(gameState.level);
-  gameState.invaders = generateEmojis(gameState.invadersStartPosition, game);
+  gameState.invaders = generateEmojis(gameState.invadersStartPosition, gameWindow);
   recalcInvaders();
 }
 
 function recalcMoveAmountX() {
   gameState.moveAmount.x = gameState.gameWidth / (14 * 8 * 1); // (11 chars + 3spaces)* 8 moves per char // (active cols + 3) * 8/col
-  //gameState.moveAmount.x = gameState.gameWidth / (14 * 8 * (gameState.activeInvaders / gameState.totalInvaders)); // (11 chars + 3spaces)* 8 moves per char // (active cols + 3) * 8/col
+  // gameState.moveAmount.x = gameState.gameWidth / (14 * 8 * (gameState.activeInvaders / gameState.totalInvaders)); // (11 chars + 3spaces)* 8 moves per char // (active cols + 3) * 8/col
 }
 
-function playButton(e) {
+function playButton() {
   gameState.paused = !gameState.paused;
   btnPlay.innerHTML = gameState.paused ? 'Play!' : 'Pause';
 
@@ -140,13 +150,15 @@ function isKeyPressed(keycode) {
   return keys[keycode];
 }
 
-function lostFocus(e) {
+function lostFocus() {
   // clear keys so things don't keep happening
-  keys.forEach((key, i) => (keys[i] = false)); // not sure why just setting key=false doesn't work?!
+  keys.forEach((key, i) => {
+    keys[i] = false;
+  }); // not sure why just setting key=false doesn't work?!
 }
 
-function spriteTranslate(element, { x, y }, rotation = 0) {
-  element.style.transform = `translate(${x}px, ${y}px) rotate(${rotation}deg)`;
+function spriteTranslate(element, { x, y }, rotation = 0, scale = 1) {
+  element.style.transform = `translate(${x}px, ${y}px) rotate(${rotation}deg) scale(${scale})`;
 }
 
 function playerTranslate(playerElement, playerPosition) {
@@ -156,16 +168,20 @@ function playerTranslate(playerElement, playerPosition) {
 function calculateInvaderPosition(index) {
   const col = index % 11;
   const row = Math.floor(index / 11);
-  //const x = gameState.invadersCurrentPosition.x + col * ((window.innerWidth * 7.1) / 100); // 7.1 us going to be vw
   const x = gameState.invadersCurrentPosition.x + col * ((gameState.gameWidth * 7.1) / 100); // 7.1 us going to be vw
-  //const y = gameState.invadersCurrentPosition.y + row * ((window.innerWidth * 7.1) / 100);
   const y = gameState.invadersCurrentPosition.y + row * ((gameState.gameWidth * 7.1) / 100);
   return { x, y };
 }
 
 function recalcInvaders() {
-  //gameState.invaders.forEach((invader) => spriteTranslate(invader, calculateInvaderPosition(invader.dataset.id), (360 / 8) * gameState.rollTick));
-  gameState.invaders.forEach((invader) => spriteTranslate(invader, calculateInvaderPosition(invader.dataset.id), (360 / 8) * gameState.rollTick));
+  // gameState.invaders.forEach((invader) => spriteTranslate(invader, calculateInvaderPosition(invader.dataset.id), (360 / 8) * gameState.rollTick));
+  gameState.invaders.forEach((invader) =>
+    spriteTranslate(
+      invader,
+      calculateInvaderPosition(invader.dataset.id),
+      (360 / 8) * gameState.rollTick
+    )
+  );
 }
 
 function resizePlayer(lastWidth) {
@@ -174,7 +190,7 @@ function resizePlayer(lastWidth) {
   spriteTranslate(player, { x: gameState.playerPosition, y: 0 });
 }
 
-function handleResize(e) {
+function handleResize() {
   const lastWidth = gameState.gameWidth;
   gameState.gameWidth = gameWindow.getBoundingClientRect().width;
   gameState.gameHeight = gameWindow.getBoundingClientRect().height;
@@ -215,14 +231,19 @@ function playSound(tickNumber) {
   }
 }
 
-function isCollided(shot, target) {
-  const shotRect = shot.getBoundingClientRect();
+function isCollided(testShot, target) {
+  const shotRect = testShot.getBoundingClientRect();
   const targetRect = target.getBoundingClientRect();
 
   const midX = shotRect.left + shotRect.width / 2;
   const midY = shotRect.top + shotRect.height / 2;
 
-  return targetRect.top <= midY && targetRect.bottom >= midY && targetRect.left <= midX && targetRect.right >= midX;
+  return (
+    targetRect.top <= midY &&
+    targetRect.bottom >= midY &&
+    targetRect.left <= midX &&
+    targetRect.right >= midX
+  );
 }
 
 function createInvader(emoji, { x, y }, points, id, classList = []) {
@@ -230,18 +251,16 @@ function createInvader(emoji, { x, y }, points, id, classList = []) {
   newInvader.innerHTML = emoji;
   newInvader.dataset.points = points;
   newInvader.classList.add('invader', ...classList);
-  newInvader.style.left = x + 'px';
-  newInvader.style.top = y + 'px';
+  newInvader.style.left = `${x}px`;
+  newInvader.style.top = `${y}px`;
   newInvader.dataset.id = id;
   return newInvader;
 }
 
-function createBomb(emoji, { x, y }) {
+function createBomb(emoji) {
   const newBomb = document.createElement('div');
   newBomb.innerHTML = emoji;
   newBomb.classList.add('bomb');
-  newBomb.style.left = 0 + 'px';
-  newBomb.style.top = 0 + 'px';
 
   return newBomb;
 }
@@ -253,7 +272,7 @@ function clearBomb(bomb) {
 
 function addBomb({ x, y }) {
   // adds a new bomb to the array of active bombs
-  const newBomb = createBomb(emojis.bomb, { x, y });
+  const newBomb = createBomb(emojis.bomb);
   gameState.bombs.push({ domBomb: newBomb, position: { x, y } });
   spriteTranslate(newBomb, { x, y });
   gameWindow.appendChild(newBomb);
@@ -267,10 +286,15 @@ function generateEmojis({ x, y }, childNode) {
   const howMany = 55;
   const tempInvaders = [];
   // width in %, height in px?
-  for (let i = 0; i < howMany; i++) {
+  for (let i = 0; i < howMany; i += 1) {
     const row = Math.floor(i / 11);
-    //tempInvaders[i] = createInvader(emojis.invaders[row], calculateInvaderPosition(i), gameState.rowPoints[row], i);
-    tempInvaders[i] = createInvader(emojis.invaders[row], { x: 0, y: 0 }, gameState.rowPoints[row], i);
+    // tempInvaders[i] = createInvader(emojis.invaders[row], calculateInvaderPosition(i), gameState.rowPoints[row], i);
+    tempInvaders[i] = createInvader(
+      emojis.invaders[row],
+      { x: 0, y: 0 },
+      gameState.rowPoints[row],
+      i
+    );
     childNode.appendChild(tempInvaders[i]);
   }
 
@@ -284,11 +308,18 @@ function killed(element, currentTimestep) {
 }
 
 function clearKilled(currentTimestep) {
-  if (gameState.lastKilled !== null && currentTimestep >= gameState.lastKilledTime + gameState.boomTime) {
+  if (
+    gameState.lastKilled !== null &&
+    currentTimestep >= gameState.lastKilledTime + gameState.boomTime
+  ) {
     gameState.lastKilled.remove(); // remove from DOM
     gameState.invaders.splice(gameState.invaders.indexOf(gameState.lastKilled), 1); // remove from internal array
     gameState.lastKilled = null;
   }
+}
+
+function percentToGameWidthPixels(positionPercent) {
+  return (positionPercent * gameState.gameWidth) / 100;
 }
 
 const bunker = [
@@ -306,23 +337,24 @@ const bunker = [
   [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
 ];
 
+function setBunkerElementSize(el) {}
+
 function createBunker({ x: screenX, y: screenY }) {
-  console.log(screenX, screenY);
   const width = (0.5 * gameState.gameWidth) / 100;
   const height = (0.5 * gameState.gameHeight) / 100;
   const div = document.createElement('div');
   div.classList.add('bunker');
-  for (let y = 0; y < 12; y++) {
-    for (let x = 0; x < 16; x++) {
-      if (bunker[y][x] === 1) {
+  for (let j = 0; j < 12; j += 1) {
+    for (let i = 0; i < 16; i += 1) {
+      if (bunker[j][i] === 1) {
         const currentElement = document.createElement('div');
         currentElement.classList.add('bunker-element');
-        currentElement.innerHTML = emojis.bunker;
-        const left = screenX + x * width;
-        currentElement.style.left = left + 'px';
-        const top = screenY + y * height;
-        currentElement.style.top = top + 'px';
-        console.log(left, top);
+        // currentElement.innerHTML = emojis.alienShip;
+        currentElement.style.width = `${((10 * gameState.gameWidth) / 100 / 16) * 1.0}px`;
+        currentElement.style.height = `${((8 * gameState.gameWidth) / 100 / 16) * 1.15}px`;
+        const left = screenX + i * width;
+        const top = screenY + j * height;
+        spriteTranslate(currentElement, { x: left, y: top });
         div.appendChild(currentElement);
       }
     }
@@ -333,20 +365,23 @@ function createBunker({ x: screenX, y: screenY }) {
 //
 function createBunkers() {
   const div = document.createElement('div');
+  div.classList.add('bunkers');
 
-  div.appendChild(createBunker({ x: 50, y: 700 }));
-  div.appendChild(createBunker({ x: 150, y: 700 }));
-  div.appendChild(createBunker({ x: 250, y: 700 }));
-  div.appendChild(createBunker({ x: 350, y: 700 }));
+  div.appendChild(createBunker({ x: percentToGameWidthPixels(14), y: 700 }));
+  div.appendChild(createBunker({ x: percentToGameWidthPixels(35), y: 700 }));
+  div.appendChild(createBunker({ x: percentToGameWidthPixels(56), y: 700 }));
+  div.appendChild(createBunker({ x: percentToGameWidthPixels(77), y: 700 }));
 
   return div;
 }
 
-function resizeBunker(bunker) {}
+function resizeBunker(theBunker) {}
 
-/**********************************************************************************************/
-/***********************************  MAIN GAME LOOP ******************************************/
-/**********************************************************************************************/
+function resizeBunkers() {}
+
+/** ******************************************************************************************* */
+/** *********************************  MAIN GAME LOOP ***************************************** */
+/** ******************************************************************************************* */
 function animate(timestep) {
   if (gameState.paused) return;
   if (!gameState.lastTime) {
@@ -356,11 +391,15 @@ function animate(timestep) {
     return;
   }
   let doAnimate = false;
-  //if (timestep >= gameState.lastAnimationTick + gameState.invadersBaseSpeed * (gameState.activeInvaders / gameState.totalInvaders)) {
-  if (timestep >= gameState.lastAnimationTick + gameState.invadersBaseSpeed * (gameState.invaders.length / gameState.totalInvaders)) {
+  // if (timestep >= gameState.lastAnimationTick + gameState.invadersBaseSpeed * (gameState.activeInvaders / gameState.totalInvaders)) {
+  if (
+    timestep >=
+    gameState.lastAnimationTick +
+      gameState.invadersBaseSpeed * (gameState.invaders.length / gameState.totalInvaders)
+  ) {
     gameState.lastAnimationTick = timestep;
     doAnimate = true;
-    if (gameState.rollTick < 8) gameState.rollTick++;
+    if (gameState.rollTick < 8) gameState.rollTick += 1;
     else gameState.rollTick = 1;
   }
   const deltaTime = (timestep - gameState.lastTime) / 1000; // deltaT in seconds
@@ -380,31 +419,27 @@ function animate(timestep) {
   // my thinking on the seperation of gameState.shotFired here is to test if the
   // last move loop collided before we continue to move the grid and shot again.
   if (gameState.shotFired) {
-    const shotRect = shot.getBoundingClientRect();
-    const shotTop = shotRect.top;
-    const shotMid = shotRect.left + shotRect.width / 2;
-
     gameState.invaders.some((invader) => {
       // use [].some to return true and break from the loop
       // do we need to check for the presence of the hidden class to see if it's gone first?  -- YES!
-      const rect = invader.getBoundingClientRect();
       if (!invader.classList.contains('hidden')) {
         /// collision detection
-        if (shotTop < rect.bottom && shotTop > rect.top && shotMid > rect.left && shotMid < rect.right) {
+        if (isCollided(shot, invader)) {
           // Hit logic
           gameState.shotFired = false;
           shot.classList.add('hidden');
           boom.currentTime = 0;
           boom.play();
           // invader.classList.add("hidden");
-          gameState.score += parseInt(invader.dataset.points);
+          gameState.score += parseInt(invader.dataset.points, 10);
           updateScore(gameState.score);
-          gameState.activeInvaders--;
+          gameState.activeInvaders -= 1;
           killed(invader, timestep);
-          //recalcMoveAmount();
+          // recalcMoveAmount();
           return true;
         }
       }
+      return false;
     });
   }
 
@@ -417,7 +452,12 @@ function animate(timestep) {
       // first test if any are going to touch a wall
       gameState.invaders.forEach((invader) => {
         if (!invader.classList.contains('hidden')) {
-          if (invader.getBoundingClientRect().x + invader.getBoundingClientRect().width + gameState.moveAmount.x >= gameWindow.getBoundingClientRect().right) {
+          if (
+            invader.getBoundingClientRect().x +
+              invader.getBoundingClientRect().width +
+              gameState.moveAmount.x >=
+            gameWindow.getBoundingClientRect().right
+          ) {
             gameState.rightDirection = false;
             swapped = true;
           }
@@ -426,7 +466,10 @@ function animate(timestep) {
     } else {
       gameState.invaders.forEach((invader) => {
         if (!invader.classList.contains('hidden')) {
-          if (invader.getBoundingClientRect().x - gameState.moveAmount.x <= gameWindow.getBoundingClientRect().left) {
+          if (
+            invader.getBoundingClientRect().x - gameState.moveAmount.x <=
+            gameWindow.getBoundingClientRect().left
+          ) {
             gameState.rightDirection = true;
             swapped = true;
           }
@@ -435,15 +478,13 @@ function animate(timestep) {
     }
     if (swapped) {
       gameState.invadersCurrentPosition.y += gameState.moveAmount.y;
+    } else if (gameState.rightDirection) {
+      gameState.invadersCurrentPosition.x += gameState.moveAmount.x;
     } else {
-      if (gameState.rightDirection) {
-        gameState.invadersCurrentPosition.x += gameState.moveAmount.x;
-      } else {
-        gameState.invadersCurrentPosition.x -= gameState.moveAmount.x;
-      }
+      gameState.invadersCurrentPosition.x -= gameState.moveAmount.x;
     }
     gameState.invaders.forEach((invader) => {
-      invader.style.transform = 'rotate(' + (360 / 8) * gameState.rollTick + 'deg)';
+      invader.style.transform = `rotate(${(360 / 8) * gameState.rollTickdeg})`;
     });
     playSound(gameState.rollTick);
 
@@ -471,11 +512,12 @@ function animate(timestep) {
 
       // check structure hits
 
-      //check player hits
+      // check player hits
       const playerRect = player.getBoundingClientRect();
       if (
         bombRect.bottom >= playerRect.top &&
-        ((bombRect.left >= playerRect.left && bombRect.left <= playerRect.right) || (bombRect.right <= playerRect.right && bombRect.right >= playerRect.left))
+        ((bombRect.left >= playerRect.left && bombRect.left <= playerRect.right) ||
+          (bombRect.right <= playerRect.right && bombRect.right >= playerRect.left))
       ) {
         console.log('hit player');
         clearBomb(bomb);
@@ -487,13 +529,14 @@ function animate(timestep) {
         clearBomb(bomb);
         return true;
       }
+      return false;
     });
   }
   // move any remaining bombs
   if (gameState.bombs.length) {
     gameState.bombs.forEach((bomb) => {
-      const x = bomb.position.x;
-      const y = bomb.position.y;
+      const { x } = bomb.position;
+      const { y } = bomb.position;
       bomb.position.y += gameState.bombSpeed * deltaTime;
       spriteTranslate(bomb.domBomb, { x, y });
     });
@@ -526,7 +569,7 @@ function animate(timestep) {
   // ********************************************************************************************
 
   if (isKeyPressed(32)) {
-    //space key
+    // space key
     if (!gameState.shotFired) {
       gameState.shotFired = true;
       gameState.shotPosition = {
@@ -556,6 +599,7 @@ function animate(timestep) {
     }
   }
   if (isKeyPressed(80)) {
+    playButton(); // need to debounce
   }
 
   gameState.lastTime = timestep;
