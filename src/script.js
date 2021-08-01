@@ -72,6 +72,8 @@ const gameState = {
 
   bombs: [], // {domBomb: DOMElement, position: {x: ?, y: ?}}
 
+  bunkers: [], // [...{bunker: bunkerElement, bunkerElements: [bunkerElements]}]
+
   ufoActive: false,
   ufoLastTime: null,
   ufoPosition: 0,
@@ -323,61 +325,82 @@ function percentToGameWidthPixels(positionPercent) {
 }
 
 const bunker = [
-  [0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0],
-  [0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0],
-  [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
-  [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
-  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-  [1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1],
-  [1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1],
-  [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
-  [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+  0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
+  0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1,
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+  1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+  0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1,
 ];
 
-function setBunkerElementSize(el) {}
+function setBunkerElementSize(el) {
+  el.style.width = `${((10 * gameState.gameWidth) / 100 / 16) * 1.0}px`;
+  el.style.height = `${((8 * gameState.gameWidth) / 100 / 16) * 1.15}px`;
+}
+function setBunkerElementPosition(el) {}
 
 function createBunker({ x: screenX, y: screenY }) {
   const width = (0.5 * gameState.gameWidth) / 100;
   const height = (0.5 * gameState.gameHeight) / 100;
   const div = document.createElement('div');
   div.classList.add('bunker');
+  let bunkerID = 0;
   for (let j = 0; j < 12; j += 1) {
     for (let i = 0; i < 16; i += 1) {
-      if (bunker[j][i] === 1) {
+      if (bunker[bunkerID] === 1) {
         const currentElement = document.createElement('div');
         currentElement.classList.add('bunker-element');
+        currentElement.dataset.id = bunkerID;
         // currentElement.innerHTML = emojis.alienShip;
-        currentElement.style.width = `${((10 * gameState.gameWidth) / 100 / 16) * 1.0}px`;
-        currentElement.style.height = `${((8 * gameState.gameWidth) / 100 / 16) * 1.15}px`;
+        setBunkerElementSize(currentElement);
+        // currentElement.style.width = `${((10 * gameState.gameWidth) / 100 / 16) * 1.0}px`;
+        // currentElement.style.height = `${((8 * gameState.gameWidth) / 100 / 16) * 1.15}px`;
         const left = screenX + i * width;
         const top = screenY + j * height;
         spriteTranslate(currentElement, { x: left, y: top });
         div.appendChild(currentElement);
       }
+      bunkerID += 1;
     }
   }
   return div;
 }
 
 //
+function createBunkersArray(bunkerArray) {
+  bunkerArray.length = 0; // clear array first (remove any old bunkers if we're starting a new level)
+  gameState.bunkers[0] = createBunker({ x: percentToGameWidthPixels(14), y: 700 });
+  gameState.bunkers[1] = createBunker({ x: percentToGameWidthPixels(35), y: 700 });
+  gameState.bunkers[2] = createBunker({ x: percentToGameWidthPixels(56), y: 700 });
+  gameState.bunkers[3] = createBunker({ x: percentToGameWidthPixels(77), y: 700 });
+}
+
 function createBunkers() {
-  const div = document.createElement('div');
-  div.classList.add('bunkers');
-
-  div.appendChild(createBunker({ x: percentToGameWidthPixels(14), y: 700 }));
-  div.appendChild(createBunker({ x: percentToGameWidthPixels(35), y: 700 }));
-  div.appendChild(createBunker({ x: percentToGameWidthPixels(56), y: 700 }));
-  div.appendChild(createBunker({ x: percentToGameWidthPixels(77), y: 700 }));
-
-  return div;
+  createBunkersArray(gameState.bunkers);
+  return gameState.bunkers;
 }
 
 function resizeBunker(theBunker) {}
 
 function resizeBunkers() {}
+
+function isBunkerCollision(shot, bunker) {
+  // TODO: see below comment
+  // shot is the current shot, bunker is the gameState.bunker[] object -- {bunker: bunkerElement, bunkerElements: [bunkerElements]}
+  const shotRect = shot.getBoundingClientRect();
+  const bunkerRect = bunker.getBoundingClientRect();
+  // test if shot and bunker are colliding before we see which individual pieces are effected
+  const shotBottomMid = shotRect.left + shotRect.width / 2;
+  if (
+    shotRect.bottom >= bunkerRect.top &&
+    shotRect.bottom <= bunkerRect.bottom &&
+    shotBottomMid >= bunkerRect.left &&
+    shotBottomMid <= bunkerRect.right
+  ) {
+    // We are inside a bunker, test which individual part is effected
+    console.log('bunker hit!');
+  }
+}
 
 /** ******************************************************************************************* */
 /** *********************************  MAIN GAME LOOP ***************************************** */
@@ -619,7 +642,7 @@ gameInit(); // setup begining stuff once
 
 gameReset(false); // build level and stuff
 
-gameWindow.appendChild(createBunkers());
+gameWindow.append(...createBunkers());
 
 // once all is setup lets get this going!
 window.requestAnimationFrame(animate);
