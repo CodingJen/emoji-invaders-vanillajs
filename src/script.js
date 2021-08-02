@@ -2,10 +2,14 @@
  * @author Jennifer Fix <jfix@example.com>
  */
 
-/**   TODO LIST:
- *  - Missed shots blow up at top of screen
- *  - Missed bombs blow up at bottom of screen
- *  - High score stored in localStorage
+/** TODO LIST:
+ *  Missed shots blow up at top of screen
+ *  Missed bombs blow up at bottom of screen
+ *  High score stored in localStorage
+ *  Bombs make circles in bunker
+ *  Player makes laser like marks in bunker
+ *  Animate out the explosion, opacity fade and shrink?
+ *
  */
 
 // basic elements of game
@@ -324,7 +328,7 @@ function percentToGameWidthPixels(positionPercent) {
   return (positionPercent * gameState.gameWidth) / 100;
 }
 
-const bunker = [
+const bunkerMap = [
   0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
   0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1,
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
@@ -332,47 +336,95 @@ const bunker = [
   1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
   0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1,
 ];
-
+const bunkerMapHiRes = [
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1,
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1,
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1,
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0,
+  0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0,
+  0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 1, 1, 1, 1, 1, 1, 1, 1,
+];
 function setBunkerElementSize(el) {
-  el.style.width = `${((10 * gameState.gameWidth) / 100 / 16) * 1.0}px`;
-  el.style.height = `${((8 * gameState.gameWidth) / 100 / 16) * 1.15}px`;
+  // bunkers need to be 11.1% of the game window width
+  // each bunker is 16 pixels wide 12 pixels tall
+  // each 'pixel' in bunker needs to be 11.1% / 16 = 0.69375%
+  const bunkerPixel = (0.69375 * gameState.gameWidth) / 100;
+  el.style.width = `${bunkerPixel}px`;
+  el.style.height = `${bunkerPixel}px`;
+  // el.style.width = `${((10 * gameState.gameWidth) / 100 / 16) * 1.0}px`;
+  // el.style.height = `${((8 * gameState.gameWidth) / 100 / 16) * 1.15}px`;
 }
+
 function setBunkerElementPosition(el) {}
 
-function createBunker({ x: screenX, y: screenY }) {
-  const width = (0.5 * gameState.gameWidth) / 100;
-  const height = (0.5 * gameState.gameHeight) / 100;
+function createBunker({ x: xPercent, y: screenY }) {
+  // bunkers need to be 11.1% of the game window width
+  // each bunker is 16 pixels wide 12 pixels tall
+  // each 'pixel' in bunker needs to be 11.1% / 16 = 0.69375%
+  const bunkerPixel = (0.69375 * gameState.gameWidth) / 100;
+  // const height = (0.5 * gameState.gameHeight) / 100;
   const div = document.createElement('div');
   div.classList.add('bunker');
-  let bunkerID = 0;
-  for (let j = 0; j < 12; j += 1) {
-    for (let i = 0; i < 16; i += 1) {
-      if (bunker[bunkerID] === 1) {
-        const currentElement = document.createElement('div');
-        currentElement.classList.add('bunker-element');
-        currentElement.dataset.id = bunkerID;
-        // currentElement.innerHTML = emojis.alienShip;
-        setBunkerElementSize(currentElement);
-        // currentElement.style.width = `${((10 * gameState.gameWidth) / 100 / 16) * 1.0}px`;
-        // currentElement.style.height = `${((8 * gameState.gameWidth) / 100 / 16) * 1.15}px`;
-        const left = screenX + i * width;
-        const top = screenY + j * height;
-        spriteTranslate(currentElement, { x: left, y: top });
-        div.appendChild(currentElement);
-      }
-      bunkerID += 1;
-    }
-  }
+  div.style.width = '11.1%';
+  div.style.left = `${xPercent}%`;
+  div.append(
+    ...bunkerMapHiRes.map((activePixel, index) => {
+      const newPixel = document.createElement('div');
+      newPixel.dataset.index = index;
+      newPixel.classList.add('bunker-element');
+      if (activePixel) newPixel.classList.add('bunker-element--filled');
+      return newPixel;
+    })
+  );
+
+  // let bunkerID = 0;
+  // for (let j = 0; j < 12; j += 1) {
+  //   for (let i = 0; i < 16; i += 1) {
+  //     if (bunkerMap[bunkerID] === 1) {
+  //       const currentElement = document.createElement('div');
+  //       currentElement.classList.add('bunker-element');
+  //       currentElement.dataset.id = bunkerID;
+  //       // currentElement.innerHTML = emojis.alienShip;
+  //       setBunkerElementSize(currentElement);
+  //       // currentElement.style.width = `${((10 * gameState.gameWidth) / 100 / 16) * 1.0}px`;
+  //       // currentElement.style.height = `${((8 * gameState.gameWidth) / 100 / 16) * 1.15}px`;
+  //       const left = screenX + i * bunkerPixel;
+  //       const top = screenY + j * bunkerPixel;
+  //       spriteTranslate(currentElement, { x: left, y: top });
+  //       div.appendChild(currentElement);
+  //     }
+  //     bunkerID += 1;
+  //   }
+  // }
+
   return div;
 }
 
 //
 function createBunkersArray(bunkerArray) {
   bunkerArray.length = 0; // clear array first (remove any old bunkers if we're starting a new level)
-  gameState.bunkers[0] = createBunker({ x: percentToGameWidthPixels(14), y: 700 });
-  gameState.bunkers[1] = createBunker({ x: percentToGameWidthPixels(35), y: 700 });
-  gameState.bunkers[2] = createBunker({ x: percentToGameWidthPixels(56), y: 700 });
-  gameState.bunkers[3] = createBunker({ x: percentToGameWidthPixels(77), y: 700 });
+  gameState.bunkers[0] = createBunker({ x: 11.1, y: 700 });
+  gameState.bunkers[1] = createBunker({ x: 33.3, y: 700 });
+  gameState.bunkers[2] = createBunker({ x: 55.5, y: 700 });
+  gameState.bunkers[3] = createBunker({ x: 77.7, y: 700 });
 }
 
 function createBunkers() {
@@ -384,22 +436,16 @@ function resizeBunker(theBunker) {}
 
 function resizeBunkers() {}
 
-function isBunkerCollision(shot, bunker) {
-  // TODO: see below comment
-  // shot is the current shot, bunker is the gameState.bunker[] object -- {bunker: bunkerElement, bunkerElements: [bunkerElements]}
-  const shotRect = shot.getBoundingClientRect();
-  const bunkerRect = bunker.getBoundingClientRect();
-  // test if shot and bunker are colliding before we see which individual pieces are effected
-  const shotBottomMid = shotRect.left + shotRect.width / 2;
+function isBunkerCollision({ x: shotX, y: shotY }, testElement) {
+  const testRect = testElement.getBoundingClientRect();
   if (
-    shotRect.bottom >= bunkerRect.top &&
-    shotRect.bottom <= bunkerRect.bottom &&
-    shotBottomMid >= bunkerRect.left &&
-    shotBottomMid <= bunkerRect.right
-  ) {
-    // We are inside a bunker, test which individual part is effected
-    console.log('bunker hit!');
-  }
+    shotX >= testRect.left &&
+    shotX <= testRect.right &&
+    shotY >= testRect.top &&
+    shotY <= testRect.bottom
+  )
+    return true;
+  return false;
 }
 
 /** ******************************************************************************************* */
@@ -534,6 +580,29 @@ function animate(timestep) {
       const bombRect = bomb.domBomb.getBoundingClientRect();
 
       // check structure hits
+      gameState.bunkers.forEach((bunker) => {
+        // TODO: see below comment
+        // shot is the current shot, bunker is the gameState.bunker[] object -- {bunker: bunkerElement, bunkerElements: [bunkerElements]}
+        const bunkerRect = bunker.getBoundingClientRect();
+        // test if shot and bunker are colliding before we see which individual pieces are effected
+        const bombBottomMiddle = bombRect.left + bombRect.width / 2;
+        const bombVerticalMiddle = bombRect.top + bombRect.height / 2;
+        if (isBunkerCollision({ x: bombBottomMiddle, y: bombVerticalMiddle }, bunker)) {
+          // We are inside a bunker, test which individual part is effected
+          const bunkerPixels = bunker.childNodes;
+          bunkerPixels.forEach((bunkerPixel) => {
+            if (bunkerPixel.classList.contains('bunker-element--filled')) {
+              if (isBunkerCollision({ x: bombBottomMiddle, y: bombVerticalMiddle }, bunkerPixel)) {
+                // hit an active pixel
+                bunkerPixel.classList.remove('bunker-element--filled');
+              }
+            }
+          });
+          // calculate radius from center of bomb
+
+          return false;
+        }
+      });
 
       // check player hits
       const playerRect = player.getBoundingClientRect();

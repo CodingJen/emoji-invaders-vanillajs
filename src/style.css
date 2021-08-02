@@ -139,15 +139,25 @@ header {
 .bunker {
   font-size: 1rem;
   position: absolute;
+  bottom: 75px;
+  left: 0;
+  width: 11.1%;
+  display: grid;
+  grid-template-rows: repeat(24, 1fr);
+  grid-template-columns: repeat(32, 1fr);
 }
 
 .bunker-element {
-  position: absolute;
-  background-color: purple;
-
+  background-color: transparent;
+  /* width: 5px; */
+  height: 5px;
   /* width: 0.5%; */
 
   /* height: 0.5%; */
+}
+
+.bunker-element--filled {
+  background-color: purple;
 }
 
 .score-container {
