@@ -3,6 +3,7 @@
  */
 
 /** TODO LIST:
+ * Timestep issue when un pausing. bombs disappear.
  *  Missed shots blow up at top of screen
  *  Missed bombs blow up at bottom of screen
  *  High score stored in localStorage
@@ -36,6 +37,10 @@ const gameState = {
   // static settings
   bombSpeed: 500,
   boomTime: 75, // milliseconds boom emoji shown
+
+  bunkerWidth: 32,
+  bunkerHeight: 24,
+
   invadersBaseSpeed: 1000, // milliseconds per move initially
   invadersInitialTop: 50,
   invadersStartPosition: { x: 0, y: 50 },
@@ -131,17 +136,6 @@ function gameReset(leveledUp) {
 function recalcMoveAmountX() {
   gameState.moveAmount.x = gameState.gameWidth / (14 * 8 * 1); // (11 chars + 3spaces)* 8 moves per char // (active cols + 3) * 8/col
   // gameState.moveAmount.x = gameState.gameWidth / (14 * 8 * (gameState.activeInvaders / gameState.totalInvaders)); // (11 chars + 3spaces)* 8 moves per char // (active cols + 3) * 8/col
-}
-
-function playButton() {
-  gameState.paused = !gameState.paused;
-  btnPlay.innerHTML = gameState.paused ? 'Play!' : 'Pause';
-
-  if (!gameState.paused) {
-    // heading.classList.add("to-top");
-    this.blur();
-    window.requestAnimationFrame(animate);
-  }
 }
 
 function handleKeyDown(e) {
@@ -448,6 +442,27 @@ function isBunkerCollision({ x: shotX, y: shotY }, testElement) {
   return false;
 }
 
+function getDistance({ x: x1, y: y1 }, { x: x2, y: y2 }) {
+  const xDistance = x1 > x2 ? x1 - x2 : x2 - x1;
+  const yDistance = y1 > y2 ? y1 - y2 : y2 - y1;
+  return Math.sqrt(xDistance ** 2 + yDistance ** 2);
+}
+
+function isInRadius(radius, bomb, bunkerPixel) {
+  const bombRect = bomb.getBoundingClientRect();
+  const bunkerPixRect = bunkerPixel.getBoundingClientRect();
+  const bombCenterX = bombRect.x + bombRect.width / 2;
+  const bombCenterY = bombRect.y + bombRect.height / 2;
+  const bunkerCenterX = bunkerPixRect.x + bunkerPixRect.width / 2;
+  const bunkerCenterY = bunkerPixRect.y + bunkerPixRect.height / 2;
+  if (
+    getDistance({ x: bombCenterX, y: bombCenterY }, { x: bunkerCenterX, y: bunkerCenterY }) <=
+    radius
+  )
+    return true;
+  return false;
+}
+
 /** ******************************************************************************************* */
 /** *********************************  MAIN GAME LOOP ***************************************** */
 /** ******************************************************************************************* */
@@ -576,33 +591,55 @@ function animate(timestep) {
   // ********************************************************************************************
   // check for hits first!
   if (gameState.bombs.length) {
-    gameState.bombs.some((bomb) => {
+    gameState.bombs.forEach((bomb) => {
       const bombRect = bomb.domBomb.getBoundingClientRect();
 
+      // for later if we get a hit
+      let pixelIndex = null;
+      let hitBunkerPixels = null;
       // check structure hits
-      gameState.bunkers.forEach((bunker) => {
-        // TODO: see below comment
-        // shot is the current shot, bunker is the gameState.bunker[] object -- {bunker: bunkerElement, bunkerElements: [bunkerElements]}
-        const bunkerRect = bunker.getBoundingClientRect();
+      gameState.bunkers.some((bunker) => {
         // test if shot and bunker are colliding before we see which individual pieces are effected
         const bombBottomMiddle = bombRect.left + bombRect.width / 2;
         const bombVerticalMiddle = bombRect.top + bombRect.height / 2;
+
         if (isBunkerCollision({ x: bombBottomMiddle, y: bombVerticalMiddle }, bunker)) {
           // We are inside a bunker, test which individual part is effected
-          const bunkerPixels = bunker.childNodes;
-          bunkerPixels.forEach((bunkerPixel) => {
+          const bunkerPixels = [...bunker.childNodes];
+          bunkerPixels.some((bunkerPixel) => {
             if (bunkerPixel.classList.contains('bunker-element--filled')) {
               if (isBunkerCollision({ x: bombBottomMiddle, y: bombVerticalMiddle }, bunkerPixel)) {
                 // hit an active pixel
+                // now that we have a hit pixel, lets set what pixel whas hit, stop collision testing and then figure out which other pixels are in radius of the bomb and remove them
+                // get pixel index
+                pixelIndex = bunkerPixel.dataset.index;
+                hitBunkerPixels = bunkerPixels;
                 bunkerPixel.classList.remove('bunker-element--filled');
+                return true; // leave collision testing
               }
             }
+            return false; // continue looping
           });
           // calculate radius from center of bomb
-
-          return false;
+          return true; // should be done with this bomb in this bunker
         }
+        return false;
       });
+
+      // explode out part of hit bunker (if one was hit)
+      if (pixelIndex !== null) {
+        // console.log('make big boom', pixelIndex, hitBunkerPixels);
+        const radius = bombRect.height / 2;
+        hitBunkerPixels.forEach((bunkerPixel) => {
+          if (
+            isInRadius(radius, bomb.domBomb, bunkerPixel) &&
+            bunkerPixel.classList.contains('bunker-element--filled')
+          ) {
+            bunkerPixel.classList.remove('bunker-element--filled');
+          }
+        });
+        clearBomb(bomb); // when we do this we need to leave this bomb forEach right away somehow.
+      }
 
       // check player hits
       const playerRect = player.getBoundingClientRect();
@@ -624,6 +661,7 @@ function animate(timestep) {
       return false;
     });
   }
+
   // move any remaining bombs
   if (gameState.bombs.length) {
     gameState.bombs.forEach((bomb) => {
@@ -696,6 +734,17 @@ function animate(timestep) {
 
   gameState.lastTime = timestep;
   window.requestAnimationFrame(animate);
+}
+
+function playButton() {
+  gameState.paused = !gameState.paused;
+  btnPlay.innerHTML = gameState.paused ? 'Play!' : 'Pause';
+
+  if (!gameState.paused) {
+    // heading.classList.add("to-top");
+    this.blur();
+    window.requestAnimationFrame(animate);
+  }
 }
 
 // ********************************************************************************************
