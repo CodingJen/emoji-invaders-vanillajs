@@ -103,6 +103,11 @@ const emojis = Object.freeze({
 
 const keys = [];
 
+function recalcMoveAmountX() {
+  gameState.moveAmount.x = gameState.gameWidth / (14 * 8 * 1); // (11 chars + 3spaces)* 8 moves per char // (active cols + 3) * 8/col
+  // gameState.moveAmount.x = gameState.gameWidth / (14 * 8 * (gameState.activeInvaders / gameState.totalInvaders)); // (11 chars + 3spaces)* 8 moves per char // (active cols + 3) * 8/col
+}
+
 function gameInit() {
   // set volume
   audioD.volume = gameState.volume;
@@ -129,13 +134,12 @@ function gameReset(leveledUp) {
 
   updateScore(gameState.score);
   updateLevel(gameState.level);
+
+  clearOldBunkers(gameState.bunkers);
+  gameState.bunkers = createBunkers(gameWindow);
+
   gameState.invaders = generateEmojis(gameState.invadersStartPosition, gameWindow);
   recalcInvaders();
-}
-
-function recalcMoveAmountX() {
-  gameState.moveAmount.x = gameState.gameWidth / (14 * 8 * 1); // (11 chars + 3spaces)* 8 moves per char // (active cols + 3) * 8/col
-  // gameState.moveAmount.x = gameState.gameWidth / (14 * 8 * (gameState.activeInvaders / gameState.totalInvaders)); // (11 chars + 3spaces)* 8 moves per char // (active cols + 3) * 8/col
 }
 
 function handleKeyDown(e) {
@@ -412,18 +416,26 @@ function createBunker({ x: xPercent, y: screenY }) {
   return div;
 }
 
-//
-function createBunkersArray(bunkerArray) {
-  bunkerArray.length = 0; // clear array first (remove any old bunkers if we're starting a new level)
-  gameState.bunkers[0] = createBunker({ x: 11.1, y: 700 });
-  gameState.bunkers[1] = createBunker({ x: 33.3, y: 700 });
-  gameState.bunkers[2] = createBunker({ x: 55.5, y: 700 });
-  gameState.bunkers[3] = createBunker({ x: 77.7, y: 700 });
+function clearOldBunkers(bunkerArray) {
+  bunkerArray.forEach((bunker) => {
+    bunker.remove();
+  });
 }
 
-function createBunkers() {
-  createBunkersArray(gameState.bunkers);
-  return gameState.bunkers;
+//
+function createBunkersArray() {
+  const newBunkers = [];
+  newBunkers.push(createBunker({ x: 11.1, y: 700 }));
+  newBunkers.push(createBunker({ x: 33.3, y: 700 }));
+  newBunkers.push(createBunker({ x: 55.5, y: 700 }));
+  newBunkers.push(createBunker({ x: 77.7, y: 700 }));
+  return newBunkers;
+}
+
+function createBunkers(container) {
+  const bunks = createBunkersArray();
+  container.append(...bunks);
+  return bunks;
 }
 
 function resizeBunker(theBunker) {}
@@ -760,7 +772,7 @@ gameInit(); // setup begining stuff once
 
 gameReset(false); // build level and stuff
 
-gameWindow.append(...createBunkers());
+// gameWindow.append(...createBunkers());
 
 // once all is setup lets get this going!
 window.requestAnimationFrame(animate);
