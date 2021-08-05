@@ -1,0 +1,215 @@
+@font-face {
+  font-family: 'MachineStd';
+  src: url('https://f000.backblazeb2.com/file/JensBucket/MachineStd.otf') format('opentype');
+}
+
+*,
+*::before,
+*::after {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+html {
+  padding: 0;
+  margin: 0;
+  font-size: 10px;
+}
+
+body {
+  padding: 0;
+  margin: 0;
+  height: 100vh;
+  background-color: dimgray;
+  overflow: hidden;
+}
+
+.app-wrapper {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  /* justify-content: center;
+  align-items: center; */
+}
+
+header {
+  padding-top: 2rem;
+  perspective: 100px;
+  perspective-origin: 50% 100%;
+}
+
+.logo {
+  position: relative;
+
+  /* border: 1px solid red; */
+  font-family: 'MachineStd', sans-serif;
+  font-size: 5rem;
+  text-align: center;
+  line-height: 95%;
+  color: red;
+
+  /* text-shadow: 0 -0.8rem orange, 0 -1.6rem red; */
+  letter-spacing: 2px;
+  transform: scaleY(1) rotateX(-15deg);
+  transform-origin: 50% 100%;
+}
+
+.logo::before {
+  content: 'EMOJI INVADERS';
+
+  /* outline: 1px solid orange; */
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: scaleY(0.95) scaleX(1.05);
+  transform-origin: 50% 100%;
+  color: orange;
+}
+
+.logo::after {
+  content: 'EMOJI INVADERS';
+
+  /* outline: 1px solid yellow; */
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: scaleY(0.9) scaleX(1.1);
+  transform-origin: 50% 100%;
+  color: hsla(60, 80%, 50%, 1);
+}
+
+.to-top {
+  bottom: -50px;
+  transition: all 1s;
+}
+
+/* matrix( scaleX(), skewY(), skewX(), scaleY(), translateX(), translateY() ) */
+.game-container {
+  width: 100vw;
+  height: 100%;
+  background-color: black;
+  position: relative;
+  box-shadow: inset 0 0 2px 2px rgba(255, 255, 255, 0.2), 2px 2px 10px 3px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+.hidden {
+  visibility: hidden;
+}
+
+.player {
+  position: absolute;
+  width: 50px;
+  height: 20px;
+
+  /*   background-color: orange; */
+  left: 0;
+  bottom: 50px;
+  font-size: 4rem;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+.shot {
+  position: absolute;
+  font-size: 2rem;
+}
+
+.bomb {
+  font-size: 3rem;
+  position: absolute;
+}
+
+.invader {
+  font-size: 5vw;
+  position: absolute;
+
+  /* animation: 1s linear 0s infinite alternate none running grow1; */
+
+  /* transition: all 0.5s; */
+}
+
+.bunker {
+  font-size: 0.3vw;
+  position: absolute;
+  bottom: 75px;
+  left: 0;
+  width: 11.1%;
+  display: grid;
+  grid-template-rows: repeat(24, 1fr);
+  grid-template-columns: repeat(32, 1fr);
+}
+
+.bunker-element {
+  background-color: transparent;
+  /* width: 5px; */
+  height: 5px;
+  /* width: 0.5%; */
+
+  /* height: 0.5%; */
+}
+
+.bunker-element--filled {
+  background-color: purple;
+}
+
+.score-container {
+  position: absolute;
+  max-width: 200px;
+  font-family: sans-serif;
+  font-size: 2rem;
+  color: white;
+  padding: 0.5rem;
+  display: grid;
+  grid-template-areas:
+    'score-label score'
+    'level-label level';
+}
+
+#score-label {
+  grid-area: score-label;
+}
+
+#score {
+  grid-area: score;
+  text-align: center;
+}
+
+#level-label {
+  grid-area: level-label;
+}
+
+#level {
+  grid-area: level;
+}
+
+.control-btn {
+  padding: 0.5rem;
+  font-size: 2rem;
+}
+
+footer {
+  font-family: 'MachineStd', sans-serif;
+  font-size: 2rem;
+  color: yellow;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+}
+
+@keyframes grow1 {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(0.8);
+  }
+}
