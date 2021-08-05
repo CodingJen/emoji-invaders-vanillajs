@@ -1,15 +1,15 @@
 /**
- * @author Jennifer Fix <jfix@example.com>
+ * @author Jennifer Fix <codingjennifer@gmail.com>
  */
 
 /** TODO LIST:
- * Timestep issue when un pausing. bombs disappear.
- *  Missed shots blow up at top of screen
- *  Missed bombs blow up at bottom of screen
- *  High score stored in localStorage
- *  Bombs make circles in bunker
- *  Player makes laser like marks in bunker
- *  Animate out the explosion, opacity fade and shrink?
+ * Resize not moving bombs accordingly.
+ * Missed shots blow up at top of screen
+ * Missed bombs blow up at bottom of screen
+ * High score stored in localStorage
+ * Bombs make circles in bunker
+ * Player makes laser like marks in bunker
+ * Animate out the explosion, opacity fade and shrink?
  *
  */
 
@@ -40,6 +40,7 @@ const gameState = {
 
   bunkerWidth: 32,
   bunkerHeight: 24,
+  bunkerPlayerHitDepth: 5,
 
   invadersBaseSpeed: 1000, // milliseconds per move initially
   invadersInitialTop: 50,
@@ -495,26 +496,79 @@ function animate(timestep) {
   if (gameState.shotFired) {
     gameState.invaders.some((invader) => {
       // use [].some to return true and break from the loop
-      // do we need to check for the presence of the hidden class to see if it's gone first?  -- YES!
-      if (!invader.classList.contains('hidden')) {
-        /// collision detection
-        if (isCollided(shot, invader)) {
-          // Hit logic
-          gameState.shotFired = false;
-          shot.classList.add('hidden');
-          boom.currentTime = 0;
-          boom.play();
-          // invader.classList.add("hidden");
-          gameState.score += parseInt(invader.dataset.points, 10);
-          updateScore(gameState.score);
-          gameState.activeInvaders -= 1;
-          killed(invader, timestep);
-          // recalcMoveAmount();
-          return true;
-        }
+      /// collision detection
+      if (isCollided(shot, invader)) {
+        // Hit logic
+        gameState.shotFired = false;
+        shot.classList.add('hidden');
+        boom.currentTime = 0;
+        boom.play();
+        // invader.classList.add("hidden");
+        gameState.score += parseInt(invader.dataset.points, 10);
+        updateScore(gameState.score);
+        gameState.activeInvaders -= 1;
+        killed(invader, timestep);
+        // recalcMoveAmount();
+        return true;
       }
       return false;
     });
+
+    const shotRect = shot.getBoundingClientRect();
+    const shotX = shotRect.x + shotRect.width / 2;
+    const shotY = shotRect.y + shotRect.height / 2;
+    let hitBunkerPixelIndex;
+    let hitBunkerPixelsArray;
+    // check for hit on bunkers
+    gameState.bunkers.some((bunker) => {
+      if (isBunkerCollision({ x: shotX, y: shotY }, bunker)) {
+        // test bunker elements
+        console.log('you hit bunker');
+
+        hitBunkerPixelsArray = [...bunker.childNodes];
+        hitBunkerPixelsArray.some((bunkerPixel) => {
+          if (bunkerPixel.classList.contains('bunker-element--filled')) {
+            if (isBunkerCollision({ x: shotX, y: shotY }, bunkerPixel)) {
+              hitBunkerPixelIndex = bunkerPixel.dataset.index;
+              // stop shot
+              gameState.shotFired = false;
+              shot.classList.add('hidden');
+
+              return true;
+            }
+          }
+          return false;
+        });
+        return true;
+      }
+      return false;
+    });
+
+    // todo: animate bunker laser hits
+    if (hitBunkerPixelIndex) {
+      console.log(hitBunkerPixelIndex);
+      // make hole
+      // if (due to framerate) the shot misses some pixels lower we need to clear those too (probably a bug for really slow systems)
+      const hitRow = hitBunkerPixelIndex % gameState.bunkerWidth;
+      let currentHitDepth = 0;
+
+      hitBunkerPixelsArray.reduceRight((_, bunkerPixel, index) => {
+        // lets clear any larger values in the same row incase some were missed
+        if (index % gameState.bunkerWidth === hitRow && index >= hitBunkerPixelIndex) {
+          bunkerPixel.classList.remove('bunker-element--filled');
+          // currentHitDepth += 1;
+        }
+        // now go deeper -- gameState.bunkerPlayerHitDepth to be exact!
+        if (
+          index % gameState.bunkerWidth === hitRow &&
+          currentHitDepth <= gameState.bunkerPlayerHitDepth &&
+          index <= hitBunkerPixelIndex
+        ) {
+          bunkerPixel.classList.remove('bunker-element--filled');
+          currentHitDepth += 1;
+        }
+      });
+    }
   }
 
   // ********************************************************************************************
@@ -585,25 +639,23 @@ function animate(timestep) {
       const bombRect = bomb.domBomb.getBoundingClientRect();
 
       // for later if we get a hit
-      let pixelIndex = null;
-      let hitBunkerPixels = null;
-      // check structure hits
+      let pixelIndex;
+      let hitBunkerPixelsArray;
+      const bombBottomMiddle = bombRect.left + bombRect.width / 2;
+      const bombVerticalMiddle = bombRect.top + bombRect.height / 2;
+      // check bunker hits
       gameState.bunkers.some((bunker) => {
         // test if shot and bunker are colliding before we see which individual pieces are effected
-        const bombBottomMiddle = bombRect.left + bombRect.width / 2;
-        const bombVerticalMiddle = bombRect.top + bombRect.height / 2;
-
         if (isBunkerCollision({ x: bombBottomMiddle, y: bombVerticalMiddle }, bunker)) {
           // We are inside a bunker, test which individual part is effected
-          const bunkerPixels = [...bunker.childNodes];
-          bunkerPixels.some((bunkerPixel) => {
+          hitBunkerPixelsArray = [...bunker.childNodes];
+          hitBunkerPixelsArray.some((bunkerPixel) => {
             if (bunkerPixel.classList.contains('bunker-element--filled')) {
               if (isBunkerCollision({ x: bombBottomMiddle, y: bombVerticalMiddle }, bunkerPixel)) {
                 // hit an active pixel
                 // now that we have a hit pixel, lets set what pixel whas hit, stop collision testing and then figure out which other pixels are in radius of the bomb and remove them
                 // get pixel index
                 pixelIndex = bunkerPixel.dataset.index;
-                hitBunkerPixels = bunkerPixels;
                 bunkerPixel.classList.remove('bunker-element--filled');
                 return true; // leave collision testing
               }
@@ -617,10 +669,10 @@ function animate(timestep) {
       });
 
       // explode out part of hit bunker (if one was hit)
-      if (pixelIndex !== null) {
+      if (pixelIndex) {
         // console.log('make big boom', pixelIndex, hitBunkerPixels);
         const radius = bombRect.height / 2;
-        hitBunkerPixels.forEach((bunkerPixel) => {
+        hitBunkerPixelsArray.forEach((bunkerPixel) => {
           if (
             isInRadius(radius, bomb.domBomb, bunkerPixel) &&
             bunkerPixel.classList.contains('bunker-element--filled')
@@ -733,6 +785,7 @@ function playButton() {
   if (!gameState.paused) {
     // heading.classList.add("to-top");
     this.blur();
+    gameState.lastTime = 0; // need to set this so our timestep works properly after a game pause
     window.requestAnimationFrame(animate);
   }
 }
