@@ -147,10 +147,21 @@ header {
   grid-template-columns: repeat(32, 1fr);
 }
 
+.bunkersvg {
+  width: 800px;
+  height: 600px;
+}
+
+.bunkersvg-path {
+  fill: #0f0;
+}
+
 .bunker-element {
   background-color: transparent;
+
   /* width: 5px; */
   height: 5px;
+
   /* width: 0.5%; */
 
   /* height: 0.5%; */

@@ -41,6 +41,8 @@ const gameState = {
   bunkerWidth: 32,
   bunkerHeight: 24,
   bunkerPlayerHitDepth: 5,
+  bunkerSVG:
+    '<svg class="bunkersvg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600"><path class="bunkersvg-path" style="fill:%2300ff00;stroke:%23000000;stroke-width:0px" d="M 0,600 0,200 200,0 600,0 800,200 800,600 600,600 600,500 500,400 300,400 200,500 200,600 Z" /></svg>',
 
   invadersBaseSpeed: 1000, // milliseconds per move initially
   invadersInitialTop: 50,
@@ -327,6 +329,10 @@ function percentToGameWidthPixels(positionPercent) {
   return (positionPercent * gameState.gameWidth) / 100;
 }
 
+function getBunkerSVG() {
+  return `data:image/svg+xml;utf8,${gameState.bunkerSVG}`;
+}
+
 const bunkerMap = [
   0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
   0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1,
@@ -363,7 +369,9 @@ const bunkerMapHiRes = [
   1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,
   1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,
 ];
+
 function setBunkerElementSize(el) {
+  // likely deprecated and gone - let css do the work
   // bunkers need to be 11.1% of the game window width
   // each bunker is 16 pixels wide 12 pixels tall
   // each 'pixel' in bunker needs to be 11.1% / 16 = 0.69375%
@@ -374,21 +382,21 @@ function setBunkerElementSize(el) {
   // el.style.height = `${((8 * gameState.gameWidth) / 100 / 16) * 1.15}px`;
 }
 
-function setBunkerElementPosition(el) {}
-
-function createBunker({ x: xPercent, y: screenY }) {
+function createBunker({ x: xPercent, y: screenY }, id) {
   // bunkers need to be 11.1% of the game window width
   const div = document.createElement('div');
   div.classList.add('bunker');
   div.style.width = '11.1%';
   div.style.left = `${xPercent}%`;
+  const bgTest = `url('${getBunkerSVG()}')`;
+  div.style.backgroundImage = bgTest;
+  div.id = `bunker${id}`;
   div.append(
     ...bunkerMapHiRes.map((activePixel, index) => {
       const newPixel = document.createElement('div');
       newPixel.dataset.index = index;
       newPixel.classList.add('bunker-element');
       if (activePixel) newPixel.classList.add('bunker-element--filled');
-      // if (activePixel) newPixel.innerHTML = emojis.brick;
       return newPixel;
     })
   );
@@ -404,10 +412,10 @@ function clearOldBunkers(bunkerArray) {
 //
 function createBunkersArray() {
   const newBunkers = [];
-  newBunkers.push(createBunker({ x: 11.1, y: 700 }));
-  newBunkers.push(createBunker({ x: 33.3, y: 700 }));
-  newBunkers.push(createBunker({ x: 55.5, y: 700 }));
-  newBunkers.push(createBunker({ x: 77.7, y: 700 }));
+  newBunkers.push(createBunker({ x: 11.1, y: 700 }, 0));
+  newBunkers.push(createBunker({ x: 33.3, y: 700 }, 1));
+  newBunkers.push(createBunker({ x: 55.5, y: 700 }, 2));
+  newBunkers.push(createBunker({ x: 77.7, y: 700 }, 3));
   return newBunkers;
 }
 
@@ -416,10 +424,6 @@ function createBunkers(container) {
   container.append(...bunks);
   return bunks;
 }
-
-function resizeBunker(theBunker) {}
-
-function resizeBunkers() {}
 
 function isBunkerCollision({ x: shotX, y: shotY }, testElement) {
   const testRect = testElement.getBoundingClientRect();
