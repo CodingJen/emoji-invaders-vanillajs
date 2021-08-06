@@ -333,13 +333,20 @@ function getBunkerSVG() {
   return `data:image/svg+xml;utf8,${gameState.bunkerSVG}`;
 }
 
+// prettier-ignore
 const bunkerMap = [
-  0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
-  0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1,
-  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-  1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
-  0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1,
+  0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0,
+  0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0,
+  0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
+  0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,
+  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+  1,1,1,1,1,1,0,0,0,0,1,1,1,1,1,1,
+  1,1,1,1,1,0,0,0,0,0,0,1,1,1,1,1,
+  1,1,1,1,0,0,0,0,0,0,0,0,1,1,1,1,
+  1,1,1,1,0,0,0,0,0,0,0,0,1,1,1,1,
 ];
 
 // prettier-ignore
@@ -360,7 +367,6 @@ const bunkerMapHiRes = [
   1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
   1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
   1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-  1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
   1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,
   1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,
   1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,
@@ -368,19 +374,8 @@ const bunkerMapHiRes = [
   1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,
   1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,
   1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,
+  1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,
 ];
-
-function setBunkerElementSize(el) {
-  // likely deprecated and gone - let css do the work
-  // bunkers need to be 11.1% of the game window width
-  // each bunker is 16 pixels wide 12 pixels tall
-  // each 'pixel' in bunker needs to be 11.1% / 16 = 0.69375%
-  const bunkerPixel = (0.69375 * gameState.gameWidth) / 100;
-  el.style.width = `${bunkerPixel}px`;
-  el.style.height = `${bunkerPixel}px`;
-  // el.style.width = `${((10 * gameState.gameWidth) / 100 / 16) * 1.0}px`;
-  // el.style.height = `${((8 * gameState.gameWidth) / 100 / 16) * 1.15}px`;
-}
 
 function createBunker({ x: xPercent, y: screenY }, id) {
   // bunkers need to be 11.1% of the game window width
@@ -411,12 +406,11 @@ function clearOldBunkers(bunkerArray) {
 
 //
 function createBunkersArray() {
-  const newBunkers = [];
-  newBunkers.push(createBunker({ x: 11.1, y: 700 }, 0));
-  newBunkers.push(createBunker({ x: 33.3, y: 700 }, 1));
-  newBunkers.push(createBunker({ x: 55.5, y: 700 }, 2));
-  newBunkers.push(createBunker({ x: 77.7, y: 700 }, 3));
-  return newBunkers;
+  return []
+    .push(createBunker({ x: 11.1, y: 700 }, 0))
+    .push(createBunker({ x: 33.3, y: 700 }, 1))
+    .push(createBunker({ x: 55.5, y: 700 }, 2))
+    .push(createBunker({ x: 77.7, y: 700 }, 3));
 }
 
 function createBunkers(container) {
@@ -456,6 +450,13 @@ function isInRadius(radius, bomb, bunkerPixel) {
   )
     return true;
   return false;
+}
+
+function createUFO() {
+  return document
+    .createElement('div')
+    .classList.add('ufo')
+    .appendChild(document.createTextNode(emojis.ufo));
 }
 
 /** ******************************************************************************************* */
