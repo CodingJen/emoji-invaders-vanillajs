@@ -58,6 +58,9 @@ const gameState = {
   totalInvaders: 55,
   volume: 0.1,
   ufoMinTime: 10000, // minimum milliseconds between ufo's
+  ufoY: 25,
+  ufoSpeed: 100,
+  ufoPoints: 100,
 
   // variables
   invaders: [],
@@ -86,9 +89,11 @@ const gameState = {
 
   bunkers: [], // [...{bunker: bunkerElement, bunkerElements: [bunkerElements]}]
 
-  ufoActive: false,
-  ufoLastTime: null,
-  ufoPosition: 0,
+  ufo: undefined,
+  ufoLastTime: 0,
+  ufoPosition: {}, // {x: ? y: ?}
+  ufoHit: false,
+  ufoHitTime: undefined,
 };
 
 const emojis = Object.freeze({
@@ -406,11 +411,14 @@ function clearOldBunkers(bunkerArray) {
 
 //
 function createBunkersArray() {
-  return []
-    .push(createBunker({ x: 11.1, y: 700 }, 0))
-    .push(createBunker({ x: 33.3, y: 700 }, 1))
-    .push(createBunker({ x: 55.5, y: 700 }, 2))
-    .push(createBunker({ x: 77.7, y: 700 }, 3));
+  const tempArr = [];
+  tempArr.push(
+    createBunker({ x: 11.1, y: 700 }, 0),
+    createBunker({ x: 33.3, y: 700 }, 1),
+    createBunker({ x: 55.5, y: 700 }, 2),
+    createBunker({ x: 77.7, y: 700 }, 3)
+  );
+  return tempArr;
 }
 
 function createBunkers(container) {
@@ -452,11 +460,17 @@ function isInRadius(radius, bomb, bunkerPixel) {
   return false;
 }
 
-function createUFO() {
-  return document
-    .createElement('div')
-    .classList.add('ufo')
-    .appendChild(document.createTextNode(emojis.ufo));
+function ufoCreate() {
+  const tempUFO = document.createElement('div');
+  tempUFO.classList.add('ufo');
+  tempUFO.appendChild(document.createTextNode(emojis.ufo));
+  return tempUFO;
+}
+
+function ufoDelete() {
+  gameState.ufo.remove();
+  gameState.ufo = undefined;
+  gameState.ufoHit = false;
 }
 
 /** ******************************************************************************************* */
@@ -518,6 +532,17 @@ function animate(timestep) {
       }
       return false;
     });
+
+    // Check for hits on the UFO if it's on screen
+    if (gameState.ufo) {
+      if (isCollided(shot, gameState.ufo)) {
+        gameState.ufoHit = true;
+        gameState.ufoHitTime = timestep;
+        gameState.ufo.innerHTML = emojis.boom;
+        gameState.score += gameState.ufoPoints;
+        updateScore(gameState.score);
+      }
+    }
 
     const shotRect = shot.getBoundingClientRect();
     const shotX = shotRect.x + shotRect.width / 2;
@@ -628,10 +653,28 @@ function animate(timestep) {
   // UFO Update
   // ********************************************************************************************
 
-  if (!gameState.ufoActive) {
-    const test = Math.floor(Math.random() * 1000);
-    if (test === 420) {
+  if (!gameState.ufo) {
+    const test = Math.floor(Math.random() * 500);
+    if (test === 420 && !gameState.ufo && gameState.ufoLastTime + gameState.ufoMinTime < timestep) {
       console.error('startUFO');
+      gameState.ufo = ufoCreate();
+      gameState.ufoLastTime = timestep;
+      gameState.ufoPosition.x = gameState.gameWidth;
+      gameState.ufoPosition.y = gameState.ufoY;
+      spriteTranslate(gameState.ufo, gameState.ufoPosition);
+      gameWindow.appendChild(gameState.ufo);
+    }
+  }
+  if (gameState.ufo) {
+    gameState.ufoPosition.x -= gameState.ufoSpeed * deltaTime;
+    if (gameState.ufoPosition.x <= 0 - gameState.ufo.getBoundingClientRect().width) {
+      ufoDelete();
+    } else if (gameState.ufoHit) {
+      if (gameState.ufoHitTime + gameState.boomTime < timestep) {
+        ufoDelete();
+      }
+    } else {
+      spriteTranslate(gameState.ufo, gameState.ufoPosition);
     }
   }
 

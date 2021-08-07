@@ -136,6 +136,10 @@ header {
   /* transition: all 0.5s; */
 }
 
+.ufo {
+  font-size: 4rem;
+}
+
 .bunker {
   font-size: 0.3vw;
   position: absolute;
