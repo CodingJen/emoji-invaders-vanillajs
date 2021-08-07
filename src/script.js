@@ -553,8 +553,6 @@ function animate(timestep) {
     gameState.bunkers.some((bunker) => {
       if (isBunkerCollision({ x: shotX, y: shotY }, bunker)) {
         // test bunker elements
-        console.log('you hit bunker');
-
         hitBunkerPixelsArray = [...bunker.childNodes];
         hitBunkerPixelsArray.some((bunkerPixel) => {
           if (bunkerPixel.classList.contains('bunker-element--filled')) {
@@ -576,7 +574,6 @@ function animate(timestep) {
 
     // todo: animate bunker laser hits
     if (hitBunkerPixelIndex) {
-      console.log(hitBunkerPixelIndex);
       // make hole
       // if (due to framerate) the shot misses some pixels lower we need to clear those too (probably a bug for really slow systems)
       const hitRow = hitBunkerPixelIndex % gameState.bunkerWidth;
@@ -656,7 +653,6 @@ function animate(timestep) {
   if (!gameState.ufo) {
     const test = Math.floor(Math.random() * 500);
     if (test === 420 && !gameState.ufo && gameState.ufoLastTime + gameState.ufoMinTime < timestep) {
-      console.error('startUFO');
       gameState.ufo = ufoCreate();
       gameState.ufoLastTime = timestep;
       gameState.ufoPosition.x = gameState.gameWidth;
@@ -718,7 +714,6 @@ function animate(timestep) {
 
       // explode out part of hit bunker (if one was hit)
       if (pixelIndex) {
-        // console.log('make big boom', pixelIndex, hitBunkerPixels);
         const radius = bombRect.height / 2;
         hitBunkerPixelsArray.forEach((bunkerPixel) => {
           if (
