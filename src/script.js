@@ -15,6 +15,7 @@
 
 // basic elements of game
 const gameWindow = document.getElementById('game');
+const gameContainer = document.querySelector('.game-container');
 
 const scoreElement = document.getElementById('score');
 const levelElement = document.getElementById('level');
@@ -29,6 +30,7 @@ const audioA = document.getElementById('audio-a');
 const pew = document.getElementById('pew');
 const boom = document.getElementById('boom');
 
+const btnFullScreen = document.getElementById('fullscreen-btn');
 const btnPlay = document.getElementById('play-btn');
 // const heading = document.getElementById('head');
 
@@ -553,8 +555,6 @@ function animate(timestep) {
     gameState.bunkers.some((bunker) => {
       if (isBunkerCollision({ x: shotX, y: shotY }, bunker)) {
         // test bunker elements
-        console.log('you hit bunker');
-
         hitBunkerPixelsArray = [...bunker.childNodes];
         hitBunkerPixelsArray.some((bunkerPixel) => {
           if (bunkerPixel.classList.contains('bunker-element--filled')) {
@@ -576,7 +576,6 @@ function animate(timestep) {
 
     // todo: animate bunker laser hits
     if (hitBunkerPixelIndex) {
-      console.log(hitBunkerPixelIndex);
       // make hole
       // if (due to framerate) the shot misses some pixels lower we need to clear those too (probably a bug for really slow systems)
       const hitRow = hitBunkerPixelIndex % gameState.bunkerWidth;
@@ -656,7 +655,6 @@ function animate(timestep) {
   if (!gameState.ufo) {
     const test = Math.floor(Math.random() * 500);
     if (test === 420 && !gameState.ufo && gameState.ufoLastTime + gameState.ufoMinTime < timestep) {
-      console.error('startUFO');
       gameState.ufo = ufoCreate();
       gameState.ufoLastTime = timestep;
       gameState.ufoPosition.x = gameState.gameWidth;
@@ -718,7 +716,6 @@ function animate(timestep) {
 
       // explode out part of hit bunker (if one was hit)
       if (pixelIndex) {
-        // console.log('make big boom', pixelIndex, hitBunkerPixels);
         const radius = bombRect.height / 2;
         hitBunkerPixelsArray.forEach((bunkerPixel) => {
           if (
@@ -826,6 +823,12 @@ function animate(timestep) {
   window.requestAnimationFrame(animate);
 }
 
+function showFullScreen() {
+  if (gameContainer.requestFullscreen) gameContainer.requestFullscreen();
+  else if (gameContainer.webkitRequestFullscreen) gameContainer.webkitRequestFullscreen();
+  else if (gameContainer.msRequestFullscreen) gameContainer.msRequestFullscreen();
+}
+
 function playButton() {
   gameState.paused = !gameState.paused;
   btnPlay.innerHTML = gameState.paused ? 'Play!' : 'Pause';
@@ -841,6 +844,7 @@ function playButton() {
 // ********************************************************************************************
 // setup listeners
 // ********************************************************************************************
+btnFullScreen.addEventListener('click', showFullScreen);
 btnPlay.addEventListener('click', playButton);
 window.addEventListener('keydown', handleKeyDown);
 window.addEventListener('keyup', handleKeyUp);
