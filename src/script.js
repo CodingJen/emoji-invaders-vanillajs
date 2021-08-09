@@ -15,7 +15,6 @@
 
 // basic elements of game
 const gameWindow = document.getElementById('game');
-const gameContainer = document.querySelector('.game-container');
 
 const scoreElement = document.getElementById('score');
 const levelElement = document.getElementById('level');
@@ -30,7 +29,6 @@ const audioA = document.getElementById('audio-a');
 const pew = document.getElementById('pew');
 const boom = document.getElementById('boom');
 
-const btnFullScreen = document.getElementById('fullscreen-btn');
 const btnPlay = document.getElementById('play-btn');
 // const heading = document.getElementById('head');
 
@@ -43,8 +41,6 @@ const gameState = {
   bunkerWidth: 32,
   bunkerHeight: 24,
   bunkerPlayerHitDepth: 5,
-  bunkerSVG:
-    '<svg class="bunkersvg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600"><path class="bunkersvg-path" style="fill:%2300ff00;stroke:%23000000;stroke-width:0px" d="M 0,600 0,200 200,0 600,0 800,200 800,600 600,600 600,500 500,400 300,400 200,500 200,600 Z" /></svg>',
 
   invadersBaseSpeed: 1000, // milliseconds per move initially
   invadersInitialTop: 50,
@@ -60,9 +56,6 @@ const gameState = {
   totalInvaders: 55,
   volume: 0.1,
   ufoMinTime: 10000, // minimum milliseconds between ufo's
-  ufoY: 25,
-  ufoSpeed: 100,
-  ufoPoints: 100,
 
   // variables
   invaders: [],
@@ -91,11 +84,9 @@ const gameState = {
 
   bunkers: [], // [...{bunker: bunkerElement, bunkerElements: [bunkerElements]}]
 
-  ufo: undefined,
-  ufoLastTime: 0,
-  ufoPosition: {}, // {x: ? y: ?}
-  ufoHit: false,
-  ufoHitTime: undefined,
+  ufoActive: false,
+  ufoLastTime: null,
+  ufoPosition: 0,
 };
 
 const emojis = Object.freeze({
@@ -336,24 +327,13 @@ function percentToGameWidthPixels(positionPercent) {
   return (positionPercent * gameState.gameWidth) / 100;
 }
 
-function getBunkerSVG() {
-  return `data:image/svg+xml;utf8,${gameState.bunkerSVG}`;
-}
-
-// prettier-ignore
 const bunkerMap = [
-  0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0,
-  0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0,
-  0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0,
-  0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,
-  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-  1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-  1,1,1,1,1,1,0,0,0,0,1,1,1,1,1,1,
-  1,1,1,1,1,0,0,0,0,0,0,1,1,1,1,1,
-  1,1,1,1,0,0,0,0,0,0,0,0,1,1,1,1,
-  1,1,1,1,0,0,0,0,0,0,0,0,1,1,1,1,
+  0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
+  0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1,
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+  1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+  0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1,
 ];
 
 // prettier-ignore
@@ -374,6 +354,7 @@ const bunkerMapHiRes = [
   1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
   1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
   1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+  1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
   1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,
   1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,
   1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,
@@ -381,24 +362,33 @@ const bunkerMapHiRes = [
   1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,
   1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,
   1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,
-  1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,
 ];
+function setBunkerElementSize(el) {
+  // bunkers need to be 11.1% of the game window width
+  // each bunker is 16 pixels wide 12 pixels tall
+  // each 'pixel' in bunker needs to be 11.1% / 16 = 0.69375%
+  const bunkerPixel = (0.69375 * gameState.gameWidth) / 100;
+  el.style.width = `${bunkerPixel}px`;
+  el.style.height = `${bunkerPixel}px`;
+  // el.style.width = `${((10 * gameState.gameWidth) / 100 / 16) * 1.0}px`;
+  // el.style.height = `${((8 * gameState.gameWidth) / 100 / 16) * 1.15}px`;
+}
 
-function createBunker({ x: xPercent, y: screenY }, id) {
+function setBunkerElementPosition(el) {}
+
+function createBunker({ x: xPercent, y: screenY }) {
   // bunkers need to be 11.1% of the game window width
   const div = document.createElement('div');
   div.classList.add('bunker');
   div.style.width = '11.1%';
   div.style.left = `${xPercent}%`;
-  const bgTest = `url('${getBunkerSVG()}')`;
-  div.style.backgroundImage = bgTest;
-  div.id = `bunker${id}`;
   div.append(
     ...bunkerMapHiRes.map((activePixel, index) => {
       const newPixel = document.createElement('div');
       newPixel.dataset.index = index;
       newPixel.classList.add('bunker-element');
       if (activePixel) newPixel.classList.add('bunker-element--filled');
+      // if (activePixel) newPixel.innerHTML = emojis.brick;
       return newPixel;
     })
   );
@@ -413,14 +403,12 @@ function clearOldBunkers(bunkerArray) {
 
 //
 function createBunkersArray() {
-  const tempArr = [];
-  tempArr.push(
-    createBunker({ x: 11.1, y: 700 }, 0),
-    createBunker({ x: 33.3, y: 700 }, 1),
-    createBunker({ x: 55.5, y: 700 }, 2),
-    createBunker({ x: 77.7, y: 700 }, 3)
-  );
-  return tempArr;
+  const newBunkers = [];
+  newBunkers.push(createBunker({ x: 11.1, y: 700 }));
+  newBunkers.push(createBunker({ x: 33.3, y: 700 }));
+  newBunkers.push(createBunker({ x: 55.5, y: 700 }));
+  newBunkers.push(createBunker({ x: 77.7, y: 700 }));
+  return newBunkers;
 }
 
 function createBunkers(container) {
@@ -428,6 +416,10 @@ function createBunkers(container) {
   container.append(...bunks);
   return bunks;
 }
+
+function resizeBunker(theBunker) {}
+
+function resizeBunkers() {}
 
 function isBunkerCollision({ x: shotX, y: shotY }, testElement) {
   const testRect = testElement.getBoundingClientRect();
@@ -460,19 +452,6 @@ function isInRadius(radius, bomb, bunkerPixel) {
   )
     return true;
   return false;
-}
-
-function ufoCreate() {
-  const tempUFO = document.createElement('div');
-  tempUFO.classList.add('ufo');
-  tempUFO.appendChild(document.createTextNode(emojis.ufo));
-  return tempUFO;
-}
-
-function ufoDelete() {
-  gameState.ufo.remove();
-  gameState.ufo = undefined;
-  gameState.ufoHit = false;
 }
 
 /** ******************************************************************************************* */
@@ -535,17 +514,6 @@ function animate(timestep) {
       return false;
     });
 
-    // Check for hits on the UFO if it's on screen
-    if (gameState.ufo) {
-      if (isCollided(shot, gameState.ufo)) {
-        gameState.ufoHit = true;
-        gameState.ufoHitTime = timestep;
-        gameState.ufo.innerHTML = emojis.boom;
-        gameState.score += gameState.ufoPoints;
-        updateScore(gameState.score);
-      }
-    }
-
     const shotRect = shot.getBoundingClientRect();
     const shotX = shotRect.x + shotRect.width / 2;
     const shotY = shotRect.y + shotRect.height / 2;
@@ -555,6 +523,8 @@ function animate(timestep) {
     gameState.bunkers.some((bunker) => {
       if (isBunkerCollision({ x: shotX, y: shotY }, bunker)) {
         // test bunker elements
+        console.log('you hit bunker');
+
         hitBunkerPixelsArray = [...bunker.childNodes];
         hitBunkerPixelsArray.some((bunkerPixel) => {
           if (bunkerPixel.classList.contains('bunker-element--filled')) {
@@ -576,6 +546,7 @@ function animate(timestep) {
 
     // todo: animate bunker laser hits
     if (hitBunkerPixelIndex) {
+      console.log(hitBunkerPixelIndex);
       // make hole
       // if (due to framerate) the shot misses some pixels lower we need to clear those too (probably a bug for really slow systems)
       const hitRow = hitBunkerPixelIndex % gameState.bunkerWidth;
@@ -652,27 +623,10 @@ function animate(timestep) {
   // UFO Update
   // ********************************************************************************************
 
-  if (!gameState.ufo) {
-    const test = Math.floor(Math.random() * 500);
-    if (test === 420 && !gameState.ufo && gameState.ufoLastTime + gameState.ufoMinTime < timestep) {
-      gameState.ufo = ufoCreate();
-      gameState.ufoLastTime = timestep;
-      gameState.ufoPosition.x = gameState.gameWidth;
-      gameState.ufoPosition.y = gameState.ufoY;
-      spriteTranslate(gameState.ufo, gameState.ufoPosition);
-      gameWindow.appendChild(gameState.ufo);
-    }
-  }
-  if (gameState.ufo) {
-    gameState.ufoPosition.x -= gameState.ufoSpeed * deltaTime;
-    if (gameState.ufoPosition.x <= 0 - gameState.ufo.getBoundingClientRect().width) {
-      ufoDelete();
-    } else if (gameState.ufoHit) {
-      if (gameState.ufoHitTime + gameState.boomTime < timestep) {
-        ufoDelete();
-      }
-    } else {
-      spriteTranslate(gameState.ufo, gameState.ufoPosition);
+  if (!gameState.ufoActive) {
+    const test = Math.floor(Math.random() * 1000);
+    if (test === 420) {
+      console.error('startUFO');
     }
   }
 
@@ -716,6 +670,7 @@ function animate(timestep) {
 
       // explode out part of hit bunker (if one was hit)
       if (pixelIndex) {
+        // console.log('make big boom', pixelIndex, hitBunkerPixels);
         const radius = bombRect.height / 2;
         hitBunkerPixelsArray.forEach((bunkerPixel) => {
           if (
@@ -823,12 +778,6 @@ function animate(timestep) {
   window.requestAnimationFrame(animate);
 }
 
-function showFullScreen() {
-  if (gameContainer.requestFullscreen) gameContainer.requestFullscreen();
-  else if (gameContainer.webkitRequestFullscreen) gameContainer.webkitRequestFullscreen();
-  else if (gameContainer.msRequestFullscreen) gameContainer.msRequestFullscreen();
-}
-
 function playButton() {
   gameState.paused = !gameState.paused;
   btnPlay.innerHTML = gameState.paused ? 'Play!' : 'Pause';
@@ -844,7 +793,6 @@ function playButton() {
 // ********************************************************************************************
 // setup listeners
 // ********************************************************************************************
-btnFullScreen.addEventListener('click', showFullScreen);
 btnPlay.addEventListener('click', playButton);
 window.addEventListener('keydown', handleKeyDown);
 window.addEventListener('keyup', handleKeyUp);
